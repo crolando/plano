@@ -1,5 +1,5 @@
 # imgui-node-editor-turnkey
-refactor &amp; augmentation of thedmd's imgui-node-editor blueprint example to be more plug-and-play.
+refactor &amp; augmentation of thedmd's imgui-node-editor blueprint example to be a more plug-and-play library.
 
 Loads of code taken from: https://github.com/thedmd/imgui-node-editor
 
