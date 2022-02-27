@@ -78,7 +78,7 @@ void im_draw_basic_widgets (attr_table& Properties) {
 
     // The input widgets also require you to manually disable the editor shortcuts so the view doesn't fly around.
     // (note that this is a per-frame setting, so it disables it for all text boxes.  I left it here so you could find it!)
-    ed::EnableShortcuts(ImGui::GetIO().WantTextInput);
+    ax::NodeEditor::EnableShortcuts(ImGui::GetIO().WantTextInput);
     // The input widgets require some guidance on their widths, or else they're very large. (note matching pop at the end).
     ImGui::PushItemWidth(200);
     auto str1 = Properties.get_attr("strl").get_string();

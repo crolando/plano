@@ -30,6 +30,9 @@
 // Include your "user created node definitions"
 #include <node_defs\import_animal.h>
 
+using namespace turnkey::types;
+using namespace turnkey::api;
+
 // One day, this will be the mononlithic container for all these static vars.
 nodos_session_data NodosSession;
 
@@ -53,7 +56,7 @@ static const float          s_TouchTime = 1.0f;
 
 // Not sure what this is, but I think it is a way to determine if the node is dirty based on the last 'time'
 // it was messed with.  Verify this at some point, won't you?
-static std::map<ed::NodeId, float, NodeIdLess> s_NodeTouchTime;
+static std::map<ax::NodeEditor::NodeId, float, NodeIdLess> s_NodeTouchTime;
 
 // Nodes and links are reflective - they know about each other.  This enforces this convention after construction
 // and attaching those objects.  Having reflective data lets you query a link and get what node owns it.
