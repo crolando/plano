@@ -6,7 +6,6 @@
 
 #include <imgui_node_editor.h>
 #include <example_node_spawner.h>
-#include <node_utils.h> // BuildNodes
 
 #include <example_property_im_draw.h>
 
