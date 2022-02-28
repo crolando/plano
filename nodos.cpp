@@ -40,7 +40,8 @@ static const int            s_PinIconSize = 24;
 
 std::vector<Node>& s_Nodes = NodosSession.s_Nodes;
 
-static std::vector<Link>    s_Links;   // Session Links - there is an ID that is important
+std::vector<Link>& s_Links = NodosSession.s_Links;   // Session Links - there is an ID that is important
+
 
 // Backend populates this with node position data.  save it directly to your "project file"
 // It's sort of private to the backend, so just let it serailze/deseralize and it should work.

@@ -57,6 +57,9 @@ struct nodos_session_data {
     // s_Nodes is the list of instantiated nodes in the running session
     std::vector<types::Node>    s_Nodes;
 
+    // s_Links is the list of instantiated nodes in the running session
+    std::vector<types::Link>    s_Links;
+
     // The Node Registry stores the prototypes for nodes.
     std::map<std::string, NodeDescription> NodeRegistry;
 
