@@ -304,7 +304,7 @@ void turnkey::api::nodos_session_data::Frame(void)
     // Suspend: Calls hereafter are in screnspace.
     ed::Suspend();
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
-    if (ImGui::BeginPopup("Node Context Menu"))
+    if (ImGui::BeginPopup("Node Context Menu")) // ----------------------------------------------------------------------------------------
     {
         auto node = FindNode(s.contextNodeId);
 
@@ -325,7 +325,7 @@ void turnkey::api::nodos_session_data::Frame(void)
         ImGui::EndPopup();
     }
 
-    if (ImGui::BeginPopup("Pin Context Menu"))
+    if (ImGui::BeginPopup("Pin Context Menu")) // ----------------------------------------------------------------------------------------
     {
         auto pin = FindPin(s.contextPinId);
 
@@ -345,7 +345,7 @@ void turnkey::api::nodos_session_data::Frame(void)
         ImGui::EndPopup();
     }
 
-    if (ImGui::BeginPopup("Link Context Menu"))
+    if (ImGui::BeginPopup("Link Context Menu")) // ----------------------------------------------------------------------------------------
     {
         auto link = FindLink(s.contextLinkId);
 
@@ -365,7 +365,7 @@ void turnkey::api::nodos_session_data::Frame(void)
         ImGui::EndPopup();
     }
 
-    if (ImGui::BeginPopup("Create New Node"))
+    if (ImGui::BeginPopup("Create New Node")) // ----------------------------------------------------------------------------------------
     {
         auto newNodePostion = openPopupPosition;
         //ImGui::SetCursorScreenPos(ImGui::GetMousePosOnOpeningCurrentPopup());
@@ -375,15 +375,14 @@ void turnkey::api::nodos_session_data::Frame(void)
 
         Node* node = nullptr;
 
-        // NODOS DEV ====================================================================================
-        // YOU ARE IN THE RIGHT CLICK MENU HANDLER NOW.
-        // Populate the right click menu with all the nodes in the registry.
+        // Populate the context right click menu with all the nodes in the registry.
         for(auto nodos: NodeRegistry){
             if (ImGui::MenuItem(nodos.first.c_str())){
                 node = NewRegistryNode(nodos.first);
             }
         }
 
+        // Populate the right click menu with the example nodes
         if (ImGui::MenuItem("Input Action"))
             node = SpawnInputActionNode(this);
         if (ImGui::MenuItem("Output Action"))
@@ -421,14 +420,17 @@ void turnkey::api::nodos_session_data::Frame(void)
         if (ImGui::MenuItem("Group"))
             node = SpawnHoudiniGroupNode(this);
 
+        // Do post-node-spawn actions here.
         if (node)
-        {
+        {            
             BuildNodes();
 
             s.createNewNode = false;
 
+            // Move node to near the mouse location
             ed::SetNodePosition(node->ID, newNodePostion);
 
+            // This section auto-connects a pin in your new node to a link you've dragged out
             if (auto startPin = s.newNodeLinkPin)
             {
                 auto& pins = startPin->Kind == ed::PinKind::Input ? node->Outputs : node->Inputs;
@@ -448,10 +450,10 @@ void turnkey::api::nodos_session_data::Frame(void)
                     }
                 }
             }
-        }
+        } // Done with post-node-spawn actions
 
         ImGui::EndPopup();
-    }
+    }  // Done with ImGui::BeginPopup("Create New Node")
     else
         s.createNewNode = false;
     ImGui::PopStyleVar();
@@ -480,16 +482,12 @@ void turnkey::api::nodos_session_data::Frame(void)
     drawList->AddBezierCurve(to_imvec(c.p0), to_imvec(c.p1), to_imvec(c.p2), to_imvec(c.p3), IM_COL32(255, 255, 255, 255), 1.0f);
     cubic_bezier_subdivide(acceptPoint, c);
 */
-
-
-
-
-    ed::End();
+    ed::End(); // END CALL.  We are no longer drawing nodes.
 
     // ====================================================================================================================================
     // NODOS DEV - outside-of-begin-end field.
+    // TODO: Expand greatly and reorganize.  This is hard to find, currently.
     // ====================================================================================================================================
-
     // retrive selections using api
     if (ax::NodeEditor::HasSelectionChanged())
     {
