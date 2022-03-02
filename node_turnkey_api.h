@@ -6,17 +6,6 @@
 namespace turnkey {
 namespace api {
 
-// NodeIDLess is a custom comparitor function for the s_NodeTouchTime map.
-// TODO: move this.
-struct NodeIdLess
-{
-    bool operator()(const ax::NodeEditor::NodeId& lhs, const ax::NodeEditor::NodeId& rhs) const
-    {
-        return lhs.AsPointer() < rhs.AsPointer();
-    }
-};
-
-
 struct PinDescription {
     std::string Label;
     std::string DataType;

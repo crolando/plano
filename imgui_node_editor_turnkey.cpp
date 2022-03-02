@@ -54,6 +54,16 @@ static ImTextureID          s_SaveIcon = nullptr;
 static ImTextureID          s_RestoreIcon = nullptr;
 static const float          s_TouchTime = 1.0f;
 
+// NodeIDLess is a custom comparitor function for the s_NodeTouchTime map.
+// TODO: move this.
+struct NodeIdLess
+{
+    bool operator()(const ax::NodeEditor::NodeId& lhs, const ax::NodeEditor::NodeId& rhs) const
+    {
+        return lhs.AsPointer() < rhs.AsPointer();
+    }
+};
+
 // Not sure what this is, but I think it is a way to determine if the node is dirty based on the last 'time'
 // it was messed with.  Verify this at some point, won't you?
 static std::map<ax::NodeEditor::NodeId, float, NodeIdLess> s_NodeTouchTime;
