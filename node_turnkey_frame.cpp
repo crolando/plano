@@ -298,6 +298,11 @@ void turnkey::api::nodos_session_data::Frame(void)
     // NODOS DEV - Draw context menu bodies
     //   This section "implements" the OpenPopup() calls from the previous section.
     //
+    //   "NodeContextMenu"
+    //   "Pin Context Menu"
+    //   "Link Context Menu"
+    //   "Create New Node"
+    //
     // Please read notes above about screen-space and graph-space conversion
     // implemented in Suspend() and Resume()
     // ====================================================================================================================================
