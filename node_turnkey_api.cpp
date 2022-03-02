@@ -1,7 +1,6 @@
 // This source file must have credited to thedmd on github.  This is a heavily modified version of this file, retrieved 12/27/2020:
 // https://github.com/thedmd/imgui-node-editor/blob/master/examples/blueprints-example/blueprints-example.cpp
 
-#include <NodosWidget.h>
 #include "utilities/widgets.h"
 
 #include <imgui_node_editor.h>
@@ -32,27 +31,9 @@
 using namespace turnkey::types;
 using namespace turnkey::api;
 
-// One day, this will be the mononlithic container for all these static vars.
-nodos_session_data NodosSession;
 
 
-static const int            s_PinIconSize = 24;
 
-std::vector<Node>& s_Nodes = NodosSession.s_Nodes;
-
-std::vector<Link>& s_Links = NodosSession.s_Links;   // Session Links - there is an ID that is important
-
-
-// Backend populates this with node position data.  save it directly to your "project file"
-// It's sort of private to the backend, so just let it serailze/deseralize and it should work.
-// The this data hooks up to the s_Nodes and s_Links vectors based on the node.ID and link.ID.
-static std::string          s_BlueprintData;
-
-static ImTextureID          s_HeaderBackground = nullptr;
-static ImTextureID          s_SampleImage = nullptr;
-static ImTextureID          s_SaveIcon = nullptr;
-static ImTextureID          s_RestoreIcon = nullptr;
-static const float          s_TouchTime = 1.0f;
 
 // NodeIDLess is a custom comparitor function for the s_NodeTouchTime map.
 // TODO: move this.
@@ -70,10 +51,10 @@ static std::map<ax::NodeEditor::NodeId, float, NodeIdLess> s_NodeTouchTime;
 
 // Nodes and links are reflective - they know about each other.  This enforces this convention after construction
 // and attaching those objects.  Having reflective data lets you query a link and get what node owns it.
-void BuildNodes()
+void turnkey::api::nodos_session_data::BuildNodes(void)
 {
     for (auto& node : s_Nodes)
-        NodosSession.BuildNode(&node);
+        BuildNode(&node);
 }
 
 static inline ImRect ImGui_GetItemRect()
@@ -117,19 +98,19 @@ static ed::EditorContext* m_Editor = nullptr;
 //    return ed::NodeId(GetNextId());
 //}
 
-static ed::LinkId GetNextLinkId()
+ax::NodeEditor::NodeId turnkey::api::nodos_session_data::GetNextLinkId()
 {
-    return ed::LinkId(NodosSession.GetNextId());
+    return ax::NodeEditor::NodeId(GetNextId());
 }
 
 // TouchNode is called during config saves
-static void TouchNode(ed::NodeId id)
+void turnkey::api::nodos_session_data::TouchNode(ax::NodeEditor::NodeId id)
 {
     s_NodeTouchTime[id] = s_TouchTime;
 }
 
 // This is used for left pane stuff
-static float GetTouchProgress(ed::NodeId id)
+float turnkey::api::nodos_session_data::GetTouchProgress(ax::NodeEditor::NodeId id)
 {
     auto it = s_NodeTouchTime.find(id);
     if (it != s_NodeTouchTime.end() && it->second > 0.0f)
@@ -148,7 +129,7 @@ static void UpdateTouch()
     }
 }
 
-static Node* FindNode(ed::NodeId id)
+turnkey::types::Node* turnkey::api::nodos_session_data::FindNode(ax::NodeEditor::NodeId id)
 {
     for (auto& node : s_Nodes)
         if (node.ID == id)
@@ -157,7 +138,7 @@ static Node* FindNode(ed::NodeId id)
     return nullptr;
 }
 
-static Link* FindLink(ed::LinkId id)
+turnkey::types::Link* turnkey::api::nodos_session_data::FindLink(ax::NodeEditor::LinkId id)
 {
     for (auto& link : s_Links)
         if (link.ID == id)
@@ -166,7 +147,7 @@ static Link* FindLink(ed::LinkId id)
     return nullptr;
 }
 
-static Pin* FindPin(ed::PinId id)
+turnkey::types::Pin* turnkey::api::nodos_session_data::FindPin(ax::NodeEditor::PinId id)
 {
     if (!id)
         return nullptr;
@@ -185,7 +166,7 @@ static Pin* FindPin(ed::PinId id)
     return nullptr;
 }
 
-static bool IsPinLinked(ed::PinId id)
+bool turnkey::api::nodos_session_data::IsPinLinked(ax::NodeEditor::PinId id)
 {
     if (!id)
         return false;
@@ -226,7 +207,8 @@ static bool CanCreateLink(Pin* a, Pin* b)
 // This is probably the first recursive function I've wrote.  That shouldn't be
 // a true statement.
 // ============================================================================
-bool isNodeAncestor(Node* Ancestor, Node* Decendent) {
+
+bool turnkey::api::nodos_session_data::isNodeAncestor(types::Node* Ancestor, types::Node* Decendent) {
     auto decendent_inputs = Decendent->Inputs;
 
     qDebug() << "-------------------------------------------------------";
@@ -282,12 +264,13 @@ bool isNodeAncestor(Node* Ancestor, Node* Decendent) {
     } // Done searching pins
 }
 
-void NodosWidget::NodeWidget_Initialize()
+
+void turnkey::api::nodos_session_data::Initialize(void)
 {
 
     // NODOS DEV ===================================================
     // Register nodes from the user's node description forms.    
-    NodosSession.RegisterNewNode(node_defs::import_animal::ConstructDefinition());
+    RegisterNewNode(node_defs::import_animal::ConstructDefinition());
 
     // NODOS DEV ===================================================
     // Config is what this system calls a mechanism to move node-related data to and from
@@ -316,51 +299,12 @@ void NodosWidget::NodeWidget_Initialize()
     // Config structure holds callsbacks for backend-frontend serialization transactions.
     ed::Config config;
 
-    config.SaveSettings = [](const char* data, size_t size, ax::NodeEditor::SaveReasonFlags reason, void* userPointer) -> bool
-    {
-        s_BlueprintData.reserve(size); //maybe not needed
-        s_BlueprintData.assign(data);
-        std::ofstream out("project.txt");
-        out << s_BlueprintData;
-        return true;
-    };
-
-    config.LoadSettings = [](char* data, void* userPointer)->size_t {
-        std::ifstream in("project.txt");
-        std::stringstream b;
-        b << in.rdbuf();
-        s_BlueprintData = b.str();
-
-        size_t size = s_BlueprintData.size();
-        if(data) {
-            memcpy(data,s_BlueprintData.c_str(),size);
-        }
-        return size;
-    };
-
-    config.LoadNodeSettings = [](ed::NodeId nodeId, char* data, void* userPointer) -> size_t
-    {
-        auto node = FindNode(nodeId);
-        if (!node)
-            return 0;
-
-        if (data != nullptr)
-            memcpy(data, node->State.data(), node->State.size());
-        return node->State.size();
-    };
-
-    config.SaveNodeSettings = [](ed::NodeId nodeId, const char* data, size_t size, ed::SaveReasonFlags reason, void* userPointer) -> bool
-    {
-        auto node = FindNode(nodeId);
-        if (!node)
-            return false;
-
-        node->State.assign(data, size);
-
-        TouchNode(nodeId);
-
-        return true;
-    };
+    // https://stackoverflow.com/questions/19808054/convert-c-function-pointer-to-c-function-pointer/19808250#19808250
+    config.UserPointer = (void*) this;
+    config.SaveSettings = turnkey::api::nodos_session_data::static_config_save_settings;
+    config.LoadSettings = turnkey::api::nodos_session_data::static_config_load_settings;
+    config.LoadNodeSettings = turnkey::api::nodos_session_data::static_config_load_node_settings;
+    config.SaveNodeSettings = turnkey::api::nodos_session_data::static_config_save_node_settings;
 
     m_Editor = ed::CreateEditor(&config);
     ed::SetCurrentEditor(m_Editor);
@@ -453,9 +397,9 @@ void NodosWidget::NodeWidget_Initialize()
         // PHASE TWO - INSTANTIATE NODES ------------------------------------------
         // Use data in Nodename and Properties to instantiate nodes from the registry
         // (new node definition system)
-        if (NodosSession.NodeRegistry.count(NodeName) > 0)
+        if (NodeRegistry.count(NodeName) > 0)
         {
-            NodosSession.RestoreRegistryNode(NodeName,&Properties,id);
+            RestoreRegistryNode(NodeName,&Properties,id);
         } else {
             // This mess is only here to support the old examples. We can remove this
             // when the old examples are ported to the new node_defs system.
@@ -463,22 +407,22 @@ void NodosWidget::NodeWidget_Initialize()
             // Call the appropriate example node spawner.  You must do this
             // because the spawners have the pin layout information, and pin instantiation
             // must be done to keep the ID alignment.
-                     if (NodeName == "InputAction Fire") {SpawnInputActionNode(NodosSession);}
-                else if (NodeName == "Branch")           {SpawnBranchNode(NodosSession);}
-                else if (NodeName == "Do N")             {SpawnDoNNode(NodosSession);}
-                else if (NodeName == "OutputAction")     {SpawnOutputActionNode(NodosSession);}
-                else if (NodeName == "Print String")     {SpawnPrintStringNode(NodosSession);}
-                else if (NodeName == "")                 {SpawnMessageNode(NodosSession);}
-                else if (NodeName == "Set Timer")        {SpawnSetTimerNode(NodosSession);}
-                else if (NodeName == "<")                {SpawnLessNode(NodosSession);}
-                else if (NodeName == "o.O")              {SpawnWeirdNode(NodosSession);}
-                else if (NodeName == "Single Line Trace by Channel") {SpawnTraceByChannelNode(NodosSession);}
-                else if (NodeName == "Sequence")         {SpawnTreeSequenceNode(NodosSession);}
-                else if (NodeName == "Move To")          {SpawnTreeTaskNode(NodosSession);}
-                else if (NodeName == "Random Wait")      {SpawnTreeTask2Node(NodosSession);}
-                else if (NodeName == "Test Comment")     {SpawnComment(NodosSession);}
-                else if (NodeName == "Transform")        {SpawnHoudiniTransformNode(NodosSession);}
-                else if (NodeName == "Group")            {SpawnHoudiniGroupNode(NodosSession);}
+                     if (NodeName == "InputAction Fire") {SpawnInputActionNode(this);}
+                else if (NodeName == "Branch")           {SpawnBranchNode(this);}
+                else if (NodeName == "Do N")             {SpawnDoNNode(this);}
+                else if (NodeName == "OutputAction")     {SpawnOutputActionNode(this);}
+                else if (NodeName == "Print String")     {SpawnPrintStringNode(this);}
+                else if (NodeName == "")                 {SpawnMessageNode(this);}
+                else if (NodeName == "Set Timer")        {SpawnSetTimerNode(this);}
+                else if (NodeName == "<")                {SpawnLessNode(this);}
+                else if (NodeName == "o.O")              {SpawnWeirdNode(this);}
+                else if (NodeName == "Single Line Trace by Channel") {SpawnTraceByChannelNode(this);}
+                else if (NodeName == "Sequence")         {SpawnTreeSequenceNode(this);}
+                else if (NodeName == "Move To")          {SpawnTreeTaskNode(this);}
+                else if (NodeName == "Random Wait")      {SpawnTreeTask2Node(this);}
+                else if (NodeName == "Test Comment")     {SpawnComment(this);}
+                else if (NodeName == "Transform")        {SpawnHoudiniTransformNode(this);}
+                else if (NodeName == "Group")            {SpawnHoudiniGroupNode(this);}
                 else {  throw std::invalid_argument("Deserializer encountered a unrecognized legacy node name: " + NodeName);}
                 s_Nodes.back().Properties.deseralize(Properties);
         } // Done with node instantiation.
@@ -488,7 +432,7 @@ void NodosWidget::NodeWidget_Initialize()
     //auto& io = ImGui::GetIO();
 }
 
-void NodosWidget::NodeWidget_Finalize()
+void turnkey::api::nodos_session_data::Finalize(void)
 {
     textures.DestroyTexture(s_RestoreIcon);
     textures.DestroyTexture(s_SaveIcon);
@@ -549,7 +493,7 @@ ImColor GetIconColor(PinType type)
     }
 };
 
-void DrawPinIcon(const Pin& pin, bool connected, int alpha)
+void turnkey::api::nodos_session_data::DrawPinIcon(const Pin& pin, bool connected, int alpha)
 {
     IconType iconType;
     ImColor  color = GetIconColor(pin.Type);
@@ -645,7 +589,7 @@ void ShowStyleEditor(bool* show = nullptr)
     ImGui::End();
 }
 
-void NodosWidget::NodeWidget_Frame()
+void turnkey::api::nodos_session_data::Frame(void)
 {
     UpdateTouch();
 
@@ -794,8 +738,8 @@ void NodosWidget::NodeWidget_Frame()
                     ImGui::Spring(1, 0);
                 } else {
                     builder.Middle();                    
-                    if(NodosSession.NodeRegistry.count(node.Name) > 0){
-                        NodosSession.NodeRegistry[node.Name].DrawAndEditProperties(node.Properties);
+                    if(NodeRegistry.count(node.Name) > 0){
+                        NodeRegistry[node.Name].DrawAndEditProperties(node.Properties);
                     }else{
                         im_draw_basic_widgets(node.Properties);
                     }
@@ -1303,7 +1247,7 @@ void NodosWidget::NodeWidget_Frame()
                             showLabel("+ Create Link", ImColor(32, 45, 32, 180));
                             if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f))
                             {
-                                s_Links.emplace_back(Link(NodosSession.GetNextId(), startPinId, endPinId));
+                                s_Links.emplace_back(Link(GetNextId(), startPinId, endPinId));
                                 s_Links.back().Color = GetIconColor(startPin->Type);
                             }
                         }
@@ -1455,48 +1399,48 @@ void NodosWidget::NodeWidget_Frame()
         // NODOS DEV ====================================================================================
         // YOU ARE IN THE RIGHT CLICK MENU HANDLER NOW.
         // Populate the right click menu with all the nodes in the registry.
-        for(auto nodos: NodosSession.NodeRegistry){
+        for(auto nodos: NodeRegistry){
             if (ImGui::MenuItem(nodos.first.c_str())){
-                node = NodosSession.NewRegistryNode(nodos.first);
+                node = NewRegistryNode(nodos.first);
             }
         }
 
         if (ImGui::MenuItem("Input Action"))
-            node = SpawnInputActionNode(NodosSession);
+            node = SpawnInputActionNode(this);
         if (ImGui::MenuItem("Output Action"))
-            node = SpawnOutputActionNode(NodosSession);
+            node = SpawnOutputActionNode(this);
         if (ImGui::MenuItem("Branch"))
-            node = SpawnBranchNode(NodosSession);
+            node = SpawnBranchNode(this);
         if (ImGui::MenuItem("Do N"))
-            node = SpawnDoNNode(NodosSession);
+            node = SpawnDoNNode(this);
         if (ImGui::MenuItem("Set Timer"))
-            node = SpawnSetTimerNode(NodosSession);
+            node = SpawnSetTimerNode(this);
         if (ImGui::MenuItem("Less"))
-            node = SpawnLessNode(NodosSession);
+            node = SpawnLessNode(this);
         if (ImGui::MenuItem("Weird"))
-            node = SpawnWeirdNode(NodosSession);
+            node = SpawnWeirdNode(this);
         if (ImGui::MenuItem("Trace by Channel"))
-            node = SpawnTraceByChannelNode(NodosSession);
+            node = SpawnTraceByChannelNode(this);
         if (ImGui::MenuItem("Print String"))
-            node = SpawnPrintStringNode(NodosSession);
+            node = SpawnPrintStringNode(this);
         ImGui::Separator();
         if (ImGui::MenuItem("Comment"))
-            node = SpawnComment(NodosSession);
+            node = SpawnComment(this);
         ImGui::Separator();
         if (ImGui::MenuItem("Sequence"))
-            node = SpawnTreeSequenceNode(NodosSession);
+            node = SpawnTreeSequenceNode(this);
         if (ImGui::MenuItem("Move To"))
-            node = SpawnTreeTaskNode(NodosSession);
+            node = SpawnTreeTaskNode(this);
         if (ImGui::MenuItem("Random Wait"))
-            node = SpawnTreeTask2Node(NodosSession);
+            node = SpawnTreeTask2Node(this);
         ImGui::Separator();
         if (ImGui::MenuItem("Message"))
-            node = SpawnMessageNode(NodosSession);
+            node = SpawnMessageNode(this);
         ImGui::Separator();
         if (ImGui::MenuItem("Transform"))
-            node = SpawnHoudiniTransformNode(NodosSession);
+            node = SpawnHoudiniTransformNode(this);
         if (ImGui::MenuItem("Group"))
-            node = SpawnHoudiniGroupNode(NodosSession);
+            node = SpawnHoudiniGroupNode(this);
 
         if (node)
         {
@@ -1518,7 +1462,7 @@ void NodosWidget::NodeWidget_Frame()
                         if (startPin->Kind == ed::PinKind::Input)
                             std::swap(startPin, endPin);
 
-                        s_Links.emplace_back(Link(NodosSession.GetNextId(), startPin->ID, endPin->ID));
+                        s_Links.emplace_back(Link(GetNextId(), startPin->ID, endPin->ID));
                         s_Links.back().Color = GetIconColor(startPin->Type);
 
                         break;

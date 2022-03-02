@@ -2,9 +2,15 @@
 #define NODE_TURNKEY_API_H
 
 # include <node_turnkey_types.h>
+# include <texture_manager.h>
+#include <cstring>
+#include <fstream>
+#include <iostream>
+#include <sstream>
 
 namespace turnkey {
 namespace api {
+
 
 struct PinDescription {
     std::string Label;
@@ -43,6 +49,16 @@ struct NodeDescription {
 };
 
 struct nodos_session_data {
+
+    // Call before first frame
+    void Initialize(void);
+
+    // Call per frame
+    void Frame(void);
+
+    // Destroy
+    void Finalize(void);
+
     // s_Nodes is the list of instantiated nodes in the running session
     std::vector<types::Node>    s_Nodes;
 
@@ -51,6 +67,9 @@ struct nodos_session_data {
 
     // The Node Registry stores the prototypes for nodes.
     std::map<std::string, NodeDescription> NodeRegistry;
+
+    //
+    texture_manager textures;
 
     // Use this to register a new node to the system
     void RegisterNewNode(NodeDescription NewDescription) {
@@ -77,6 +96,96 @@ struct nodos_session_data {
     void SetNextId(int Id) {
         s_NextId = Id;
     }
+    // internal utilities
+    ax::NodeEditor::NodeId GetNextLinkId();
+    void TouchNode(ax::NodeEditor::NodeId id);
+    float GetTouchProgress(ax::NodeEditor::NodeId id);
+    types::Node* FindNode(ax::NodeEditor::NodeId id);
+    turnkey::types::Link* FindLink(ax::NodeEditor::LinkId id);
+    turnkey::types::Pin* FindPin(ax::NodeEditor::PinId id);
+    bool IsPinLinked(ax::NodeEditor::PinId id);
+    bool isNodeAncestor(types::Node* Ancestor, types::Node* Decendent);
+    void DrawPinIcon(const types::Pin& pin, bool connected, int alpha);
+    // i/o functions with backend (imgui-node-editor) that generally facilitate serialization of its
+    // data.  Note this uses a new technique that i could have learned when I was 20, had I gone to a cs college!
+    // this technique is explained here:
+    // https://stackoverflow.com/questions/19808054/convert-c-function-pointer-to-c-function-pointer/19808250#19808250
+    bool non_static_config_save_settings(const char* data, size_t size, ax::NodeEditor::SaveReasonFlags reason)
+    {
+        s_BlueprintData.reserve(size); //maybe not needed
+        s_BlueprintData.assign(data);
+        std::ofstream out("project.txt");
+        out << s_BlueprintData;
+        return true;
+    };
+    static bool static_config_save_settings(const char* data, size_t size, ax::NodeEditor::SaveReasonFlags reason, void* userPointer)
+    {
+        nodos_session_data* obj = (nodos_session_data*) userPointer;
+        return obj->non_static_config_save_settings(data,size,reason);
+    };
+
+    size_t non_static_config_load_settings(char* data)
+    {
+        std::ifstream in("project.txt");
+        std::stringstream b;
+        b << in.rdbuf();
+        s_BlueprintData = b.str();
+
+        size_t size = s_BlueprintData.size();
+        if(data) {
+            memcpy(data,s_BlueprintData.c_str(),size);
+        }
+        return size;
+    };
+
+    static size_t static_config_load_settings(char* data, void* userPointer)
+    {
+        nodos_session_data* obj = (nodos_session_data*) userPointer;
+        return obj->non_static_config_load_settings(data);
+    };
+
+
+    size_t non_static_config_load_node_settings(ax::NodeEditor::NodeId nodeId, char* data)
+    {
+        auto node = FindNode(nodeId);
+        if (!node)
+            return 0;
+
+        if (data != nullptr)
+            memcpy(data, node->State.data(), node->State.size());
+        return node->State.size();
+    };
+
+    static size_t static_config_load_node_settings(ax::NodeEditor::NodeId nodeId, char* data, void* userPointer)
+    {
+        nodos_session_data* obj = (nodos_session_data*) userPointer;
+        return obj->non_static_config_load_node_settings(nodeId,data);
+    };
+
+
+    bool non_static_config_save_node_settings(ax::NodeEditor::NodeId nodeId, const char* data, size_t size, ax::NodeEditor::SaveReasonFlags reason)
+    {
+        auto node = FindNode(nodeId);
+        if (!node)
+            return false;
+
+        node->State.assign(data, size);
+
+        TouchNode(nodeId);
+
+        return true;
+    };
+
+    static bool static_config_save_node_settings(ax::NodeEditor::NodeId nodeId, const char* data, size_t size, ax::NodeEditor::SaveReasonFlags reason, void* userPointer)
+    {
+        nodos_session_data* obj = (nodos_session_data*) userPointer;
+        return obj->non_static_config_save_node_settings(nodeId,data,size,reason);
+    };
+
+
+
+
+
 
     // BuildNode exists because during Spawn**Node(), the Pins are not fully
     // constructed since the information is reflective.
@@ -98,6 +207,19 @@ struct nodos_session_data {
             output.Kind = ax::NodeEditor::PinKind::Output;
         }
     }
+
+    void BuildNodes(void);
+
+
+    const int            s_PinIconSize = 24;
+
+    std::string          s_BlueprintData;
+
+    ImTextureID          s_HeaderBackground = nullptr;
+    ImTextureID          s_SampleImage = nullptr;
+    ImTextureID          s_SaveIcon = nullptr;
+    ImTextureID          s_RestoreIcon = nullptr;
+    const float          s_TouchTime = 1.0f;
 };
 
 
