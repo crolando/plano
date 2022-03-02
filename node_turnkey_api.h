@@ -48,6 +48,18 @@ struct NodeDescription {
     void (*KillExecution)(void);
 };
 
+
+// NodeIDLess is a custom comparitor function for the s_NodeTouchTime map.
+struct NodeIdLess
+{
+    bool operator()(const ax::NodeEditor::NodeId& lhs, const ax::NodeEditor::NodeId& rhs) const
+    {
+        return lhs.AsPointer() < rhs.AsPointer();
+    }
+};
+
+
+
 struct nodos_session_data {
 
     // Call before first frame
@@ -106,6 +118,19 @@ struct nodos_session_data {
     bool IsPinLinked(ax::NodeEditor::PinId id);
     bool isNodeAncestor(types::Node* Ancestor, types::Node* Decendent);
     void DrawPinIcon(const types::Pin& pin, bool connected, int alpha);
+
+
+    std::map<ax::NodeEditor::NodeId, float, NodeIdLess> s_NodeTouchTime;
+    void UpdateTouch()
+    {
+        const auto deltaTime = ImGui::GetIO().DeltaTime;
+        for (auto& entry : s_NodeTouchTime)
+        {
+            if (entry.second > 0.0f)
+                entry.second -= deltaTime;
+        }
+    }
+
     // i/o functions with backend (imgui-node-editor) that generally facilitate serialization of its
     // data.  Note this uses a new technique that i could have learned when I was 20, had I gone to a cs college!
     // this technique is explained here:

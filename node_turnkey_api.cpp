@@ -33,22 +33,6 @@ using namespace turnkey::api;
 
 
 
-
-
-// NodeIDLess is a custom comparitor function for the s_NodeTouchTime map.
-// TODO: move this.
-struct NodeIdLess
-{
-    bool operator()(const ax::NodeEditor::NodeId& lhs, const ax::NodeEditor::NodeId& rhs) const
-    {
-        return lhs.AsPointer() < rhs.AsPointer();
-    }
-};
-
-// Not sure what this is, but I think it is a way to determine if the node is dirty based on the last 'time'
-// it was messed with.  Verify this at some point, won't you?
-static std::map<ax::NodeEditor::NodeId, float, NodeIdLess> s_NodeTouchTime;
-
 // Nodes and links are reflective - they know about each other.  This enforces this convention after construction
 // and attaching those objects.  Having reflective data lets you query a link and get what node owns it.
 void turnkey::api::nodos_session_data::BuildNodes(void)
@@ -119,15 +103,7 @@ float turnkey::api::nodos_session_data::GetTouchProgress(ax::NodeEditor::NodeId 
         return 0.0f;
 }
 
-static void UpdateTouch()
-{
-    const auto deltaTime = ImGui::GetIO().DeltaTime;
-    for (auto& entry : s_NodeTouchTime)
-    {
-        if (entry.second > 0.0f)
-            entry.second -= deltaTime;
-    }
-}
+
 
 turnkey::types::Node* turnkey::api::nodos_session_data::FindNode(ax::NodeEditor::NodeId id)
 {
