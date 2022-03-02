@@ -214,7 +214,7 @@ struct nodos_session_data {
     const int            s_PinIconSize = 24;
 
     std::string          s_BlueprintData;
-
+    ax::NodeEditor::EditorContext* m_Editor = nullptr;
     ImTextureID          s_HeaderBackground = nullptr;
     ImTextureID          s_SampleImage = nullptr;
     ImTextureID          s_SaveIcon = nullptr;

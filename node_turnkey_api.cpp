@@ -79,7 +79,7 @@ using namespace ax;
 
 using ax::Widgets::IconType;
 
-static ed::EditorContext* m_Editor = nullptr;
+
 
 //extern "C" __declspec(dllimport) short __stdcall GetAsyncKeyState(int vkey);
 //extern "C" bool Debug_KeyPress(int vkey)
