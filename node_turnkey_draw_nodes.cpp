@@ -12,9 +12,7 @@ namespace util = ax::NodeEditor::Utilities;
 using namespace ax;
 using ax::Widgets::IconType;
 
-// newLinkPin is used here to cause runtime highlighting of relavent candidate pins
-// when you are dragging a link.
-void draw_nodes(turnkey::api::nodos_session_data& ctx, Pin* newLinkPin)
+void draw_blueprint_style(turnkey::api::nodos_session_data& ctx, Pin* newLinkPin)
 {
     ImGui::GetCursorScreenPos();
     util::BlueprintNodeBuilder builder(ctx.s_HeaderBackground, ctx.textures.GetTextureWidth(ctx.s_HeaderBackground), ctx.textures.GetTextureHeight(ctx.s_HeaderBackground));
@@ -35,8 +33,8 @@ void draw_nodes(turnkey::api::nodos_session_data& ctx, Pin* newLinkPin)
         for (auto& output : node.Outputs)
             if (output.Type == PinType::Delegate)
                 hasOutputDelegates = true;
-        // Build header, which can include delegates (header output pin) --------------------------------------------------------
 
+        // Build header, which can include delegates (header output pin) --------------------------------------------------------
         builder.Begin(node.ID);
             if (!isSimple)
             {
@@ -175,6 +173,10 @@ void draw_nodes(turnkey::api::nodos_session_data& ctx, Pin* newLinkPin)
             }
         builder.End();
     }
+}
+
+void draw_tree_style(turnkey::api::nodos_session_data& ctx, Pin* newLinkPin)
+{
     // ====================================================================================================================================
     // NODOS DEV - draw nodes of type Tree
     // ====================================================================================================================================
@@ -315,6 +317,10 @@ void draw_nodes(turnkey::api::nodos_session_data& ctx, Pin* newLinkPin)
         //ImGui::PopStyleVar();
     }
 
+}
+
+void draw_houdini_style(turnkey::api::nodos_session_data& ctx, Pin* newLinkPin)
+{
     // ====================================================================================================================================
     // NODOS DEV - draw nodes of type Houdini
     // ====================================================================================================================================
@@ -474,6 +480,11 @@ void draw_nodes(turnkey::api::nodos_session_data& ctx, Pin* newLinkPin)
         //    IM_COL32(48, 128, 255, 100), 0.0f);
         //ImGui::PopStyleVar();
     }
+
+}
+
+void draw_comment_style(turnkey::api::nodos_session_data&ctx, Pin* newLinkPin)
+{
     // ====================================================================================================================================
     // NODOS DEV - draw nodes of type Comment
     // ====================================================================================================================================
@@ -536,4 +547,15 @@ void draw_nodes(turnkey::api::nodos_session_data& ctx, Pin* newLinkPin)
         }
         ed::EndGroupHint();
     }
+}
+
+
+// newLinkPin is used here to cause runtime highlighting of relavent candidate pins
+// when you are dragging a link.
+void draw_nodes(turnkey::api::nodos_session_data& ctx, Pin* newLinkPin)
+{
+    draw_blueprint_style(ctx,newLinkPin);
+    draw_tree_style(ctx,newLinkPin);
+    draw_houdini_style(ctx,newLinkPin);
+    draw_comment_style(ctx,newLinkPin);
 }
