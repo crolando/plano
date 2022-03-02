@@ -80,168 +80,201 @@ void turnkey::api::nodos_session_data::Frame(void)
     // NODOS DEV - Immediate Mode node drawing.
     // ====================================================================================================================================
     ed::Begin("Node editor");
+
+    // ====================================================================================================================================
+    // NODOS DEV - draw nodes
+    // newLinkPin is passed to allow highlighting of valid candiate type-safe pin destinations when link-drawing from another pin.
+    // ====================================================================================================================================
+    draw_nodes(*this,s.newLinkPin);
+
+    // ====================================================================================================================================
+    // NODOS DEV - draw links
+    // ====================================================================================================================================
+    for (auto& link : s_Links)
+        ed::Link(link.ID, link.StartPinID, link.EndPinID, link.Color, 2.0f);
+
+    // ====================================================================================================================================
+    // NODOS DEV - Handle link-dragging interactions in immediate mode.
+    // BeginCreate() - Handle dragging a link out of a pin
+    //     QueryNewLink() - Hovering over a destination pin
+    //         AcceptNewItem()
+    //         RejectNewItem()
+    //     QueryNewNode() - hovering over the graph
+    //         AcceptNewItem()
+    //         RejectNewItem()
+    // EndCreate()
+    // ====================================================================================================================================
+    if (!s.createNewNode)
     {
         // ====================================================================================================================================
-        // NODOS DEV - draw nodes
-        // newLinkPin is passed to allow highlighting of valid candiate type-safe pin destinations when link-drawing from another pin.
+        // NODOS DEV - Handle dragging a link out of a pin
         // ====================================================================================================================================
-        draw_nodes(*this,s.newLinkPin);
-
-        // ====================================================================================================================================
-        // NODOS DEV - draw links
-        // ====================================================================================================================================
-        for (auto& link : s_Links)
-            ed::Link(link.ID, link.StartPinID, link.EndPinID, link.Color, 2.0f);
-
-        // ====================================================================================================================================
-        // NODOS DEV - Graph interactions in immediate mode.
-        // BeginCreate() - Handle dragging a link out of a pin
-        //     QueryNewLink()
-        //         AcceptNewItem()
-        //         RejectNewItem()
-        //     QueryNewNode(PinId* pinId, const ImVec4& color, float thickness)
-        //         AcceptNewItem()
-        //         RejectNewItem()
-        // EndCreate()
-        // ====================================================================================================================================
-        if (!s.createNewNode)
+        if (ed::BeginCreate(ImColor(255, 255, 255), 2.0f))
         {
-            if (ed::BeginCreate(ImColor(255, 255, 255), 2.0f))
+            // function declaration to show labels ---------------------------------------------
+            auto showLabel = [](const char* label, ImColor color)
             {
-                // function declaration to show labels ---------------------------------------------
-                auto showLabel = [](const char* label, ImColor color)
+                ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetTextLineHeight());
+                auto size = ImGui::CalcTextSize(label);
+
+                auto padding = ImGui::GetStyle().FramePadding;
+                auto spacing = ImGui::GetStyle().ItemSpacing;
+
+                ImGui::SetCursorPos(ImGui::GetCursorPos() + ImVec2(spacing.x, -spacing.y));
+
+                auto rectMin = ImGui::GetCursorScreenPos() - padding;
+                auto rectMax = ImGui::GetCursorScreenPos() + size + padding;
+
+                auto drawList = ImGui::GetWindowDrawList();
+                drawList->AddRectFilled(rectMin, rectMax, color, size.y * 0.15f);
+                ImGui::TextUnformatted(label);
+            };
+
+            // ====================================================================================================================================
+            // NODOS DEV - Handle "Query New Link" interaction:
+            //   When you've started dragging off a pin, and you're now hovering over a candidate destination pin
+            // ====================================================================================================================================
+            // startPinId and endPinId are "return by reference" from QueryNewLink.
+            ed::PinId startPinId = 0, endPinId = 0;
+            if (ed::QueryNewLink(&startPinId, &endPinId))
+            {
+                // setup stack vars for tests
+                auto startPin = FindPin(startPinId);
+                auto endPin   = FindPin(endPinId);
+                s.newLinkPin = startPin ? startPin : endPin;
+
+                // in this system you can drag from inputs to outputs
+                // but we have to mirror them for the tests here
+                if (startPin->Kind == ed::PinKind::Input)
                 {
-                    ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetTextLineHeight());
-                    auto size = ImGui::CalcTextSize(label);
-
-                    auto padding = ImGui::GetStyle().FramePadding;
-                    auto spacing = ImGui::GetStyle().ItemSpacing;
-
-                    ImGui::SetCursorPos(ImGui::GetCursorPos() + ImVec2(spacing.x, -spacing.y));
-
-                    auto rectMin = ImGui::GetCursorScreenPos() - padding;
-                    auto rectMax = ImGui::GetCursorScreenPos() + size + padding;
-
-                    auto drawList = ImGui::GetWindowDrawList();
-                    drawList->AddRectFilled(rectMin, rectMax, color, size.y * 0.15f);
-                    ImGui::TextUnformatted(label);
-                };
-
-                // QueryNewLink is true when you've started dragging off a pin, and you're now hovering over a pin
-                // This does fire right off the bat typically, as you're over the pin you just dragged off of.
-                // QueryNewLink populates its arguments with the pin ids, then you can figure out if you
-                // will allow the connection.  It
-                ed::PinId startPinId = 0, endPinId = 0;
-                if (ed::QueryNewLink(&startPinId, &endPinId))
-                {
-                    auto startPin = FindPin(startPinId);
-                    auto endPin   = FindPin(endPinId);
-                    //qDebug() << startPin->ID.Get() << " " << endPin->ID.Get() ;
-                    s.newLinkPin = startPin ? startPin : endPin;
-
-                    if (startPin->Kind == ed::PinKind::Input)
-                    {
-                        std::swap(startPin, endPin);
-                        std::swap(startPinId, endPinId);
-                    }
-
-                    // Startpin node should never connect to an ancestor end-pin
-                    auto startNode = startPin->Node;
-                    auto endNode = endPin->Node;
-
-
-
-
-                    if (startPin && endPin)
-                    {
-                        if (endPin == startPin)
-                        {
-                            ed::RejectNewItem(ImColor(255, 0, 0), 2.0f);
-                        }
-                        else if (isNodeAncestor(endNode,startNode)){
-                            showLabel("x Connection would create a loop", ImColor(45, 32, 32, 180));
-                            ed::RejectNewItem(ImColor(255, 0, 0), 2.0f);
-                        }
-                        else if (endPin->Kind == startPin->Kind)
-                        {
-                            showLabel("x Incompatible Pin Kind", ImColor(45, 32, 32, 180));
-                            ed::RejectNewItem(ImColor(255, 0, 0), 2.0f);
-                        }
-                        else if (endPin->Node == startPin->Node)
-                        {
-                            showLabel("x Cannot connect to self", ImColor(45, 32, 32, 180));
-                            ed::RejectNewItem(ImColor(255, 0, 0), 1.0f);
-                        }
-                        else if (endPin->Type != startPin->Type)
-                        {
-                            showLabel("x Incompatible Pin Type", ImColor(45, 32, 32, 180));
-                            ed::RejectNewItem(ImColor(255, 128, 128), 1.0f);
-                        }
-                        else
-                        {
-                            showLabel("+ Create Link", ImColor(32, 45, 32, 180));
-                            if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f))
-                            {
-                                s_Links.emplace_back(Link(GetNextId(), startPinId, endPinId));
-                                s_Links.back().Color = GetIconColor(startPin->Type);
-                            }
-                        }
-                    }
+                    std::swap(startPin, endPin);
+                    std::swap(startPinId, endPinId);
                 }
 
-                ed::PinId pinId = 0;
-                if (ed::QueryNewNode(&pinId))
-                {
-                    s.newLinkPin = FindPin(pinId);
-                    if (s.newLinkPin)
-                        showLabel("+ Create Node", ImColor(32, 45, 32, 180));
+                // bring the owner nodes into scope, based on the pins.
+                auto startNode = startPin->Node;
+                auto endNode = endPin->Node;
 
-                    if (ed::AcceptNewItem())
+                // Run tests & then handle interactions (hover, mouse release, etc)
+                if (startPin && endPin)
+                {
+                    if (endPin == startPin)
                     {
-                        s.createNewNode  = true;
-                        s.newNodeLinkPin = FindPin(pinId);
-                        s.newLinkPin = nullptr;
-                        ed::Suspend();
-                        ImGui::OpenPopup("Create New Node");
-                        ed::Resume();
+                        ed::RejectNewItem(ImColor(255, 0, 0), 2.0f);
                     }
+                    else if (isNodeAncestor(endNode,startNode)){
+                        showLabel("x Connection would create a loop", ImColor(45, 32, 32, 180));
+                        ed::RejectNewItem(ImColor(255, 0, 0), 2.0f);
+                    }
+                    else if (endPin->Kind == startPin->Kind)
+                    {
+                        showLabel("x Incompatible Pin Kind", ImColor(45, 32, 32, 180));
+                        ed::RejectNewItem(ImColor(255, 0, 0), 2.0f);
+                    }
+                    else if (endPin->Node == startPin->Node)
+                    {
+                        showLabel("x Cannot connect to self", ImColor(45, 32, 32, 180));
+                        ed::RejectNewItem(ImColor(255, 0, 0), 1.0f);
+                    }
+                    else if (endPin->Type != startPin->Type)
+                    {
+                        showLabel("x Incompatible Pin Type", ImColor(45, 32, 32, 180));
+                        ed::RejectNewItem(ImColor(255, 128, 128), 1.0f);
+                    }
+                    else
+                    {
+                        showLabel("+ Create Link", ImColor(32, 45, 32, 180));
+                        if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f))
+                        {
+                            s_Links.emplace_back(Link(GetNextId(), startPinId, endPinId));
+                            s_Links.back().Color = GetIconColor(startPin->Type);
+                        }
+                    }
+                } // Done with pin connection interaction handling
+            } // Done with if (ed::QueryNewLink(&startPinId, &endPinId))
+
+
+            // ====================================================================================================================================
+            // NODOS DEV - Handle "Query New Node" interaction:
+            //   When you've started dragging off a pin, and you're now hovering over the graph
+            // ====================================================================================================================================
+            // pinId is "return by reference" from QueryNewNode()
+            ed::PinId pinId = 0;
+            if (ed::QueryNewNode(&pinId))
+            {
+                s.newLinkPin = FindPin(pinId);
+                if (s.newLinkPin)
+                    showLabel("+ Create Node", ImColor(32, 45, 32, 180));
+
+                if (ed::AcceptNewItem())
+                {
+                    s.createNewNode  = true;
+                    s.newNodeLinkPin = FindPin(pinId);
+                    s.newLinkPin = nullptr;
+                    ed::Suspend();
+                    ImGui::OpenPopup("Create New Node");
+                    ed::Resume();
                 }
             }
-            else
-                s.newLinkPin = nullptr;
+        } // End of "if (ed::BeginCreate()) "
+        else
+            s.newLinkPin = nullptr;
 
-            ed::EndCreate();
+        ed::EndCreate(); // Formal end of "Create" block
 
-            if (ed::BeginDelete())
+
+        // ====================================================================================================================================
+        // NODOS DEV - Delete interactions in immediate mode.
+        // BeginDelete() - ??? Describe conditions
+        //     QueryDeletedLink() - ??? describe conditions
+        //         AcceptDeletedItem()
+        //     QueryDeletedNode() - ??? describe conditions
+        //         AcceptDeletedItem()
+        // EndDelete()
+        // ====================================================================================================================================
+        if (ed::BeginDelete())
+        {
+            ed::LinkId linkId = 0;
+            while (ed::QueryDeletedLink(&linkId))
             {
-                ed::LinkId linkId = 0;
-                while (ed::QueryDeletedLink(&linkId))
+                if (ed::AcceptDeletedItem())
                 {
-                    if (ed::AcceptDeletedItem())
-                    {
-                        auto id = std::find_if(s_Links.begin(), s_Links.end(), [linkId](auto& link) { return link.ID == linkId; });
-                        if (id != s_Links.end())
-                            s_Links.erase(id);
-                    }
-                }
-
-                ed::NodeId nodeId = 0;
-                while (ed::QueryDeletedNode(&nodeId))
-                {
-                    if (ed::AcceptDeletedItem())
-                    {
-                        auto id = std::find_if(s_Nodes.begin(), s_Nodes.end(), [nodeId](auto& node) { return node.ID == nodeId; });
-                        if (id != s_Nodes.end())
-                            s_Nodes.erase(id);
-                    }
+                    auto id = std::find_if(s_Links.begin(), s_Links.end(), [linkId](auto& link) { return link.ID == linkId; });
+                    if (id != s_Links.end())
+                        s_Links.erase(id);
                 }
             }
-            ed::EndDelete();
+
+            ed::NodeId nodeId = 0;
+            while (ed::QueryDeletedNode(&nodeId))
+            {
+                if (ed::AcceptDeletedItem())
+                {
+                    auto id = std::find_if(s_Nodes.begin(), s_Nodes.end(), [nodeId](auto& node) { return node.ID == nodeId; });
+                    if (id != s_Nodes.end())
+                        s_Nodes.erase(id);
+                }
+            }
         }
+        ed::EndDelete();
+    } // Close bracket for "if (!s.createNewNode)"
 
-        ImGui::SetCursorScreenPos(ImGui::GetCursorScreenPos());
-    }
 
+    // ====================================================================================================================================
+    // NODOS DEV - Handle right-click context menu spawning
+    //   This section just "fires" handlers that occur later.
+    //
+    // ShowNodeContextMenu() - handle right-click on a node
+    // ShowPinContextMenu() - handle right-click on a pin
+    // ShowLinkContextMenu() - handle right-click on link
+    // ShowBackgroundContextMenu() - handle right-click on graph
+    //
+    // Special Note about reference frame switching:
+    // popup windows are not done in graph space, they're done in screen space.
+    // Suspend() changes the posititiong reference frame from "graph" to "screen"
+    // so, all following calls are in screen space. Then Resume() goes back to reference frame.
+    // ====================================================================================================================================
+    ImGui::SetCursorScreenPos(ImGui::GetCursorScreenPos());
 # if 1
     auto openPopupPosition = ImGui::GetMousePos();
     ed::Suspend();
@@ -256,8 +289,19 @@ void turnkey::api::nodos_session_data::Frame(void)
         ImGui::OpenPopup("Create New Node");
         s.newNodeLinkPin = nullptr;
     }
+    // Resume:  Calls hereafter are now in the graph reference frame.
     ed::Resume();
 
+
+
+    // ====================================================================================================================================
+    // NODOS DEV - Draw context menu bodies
+    //   This section "implements" the OpenPopup() calls from the previous section.
+    //
+    // Please read notes above about screen-space and graph-space conversion
+    // implemented in Suspend() and Resume()
+    // ====================================================================================================================================
+    // Suspend: Calls hereafter are in screnspace.
     ed::Suspend();
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
     if (ImGui::BeginPopup("Node Context Menu"))
