@@ -13,15 +13,15 @@
 #include <imgui_internal.h>
 #include <draw_utils.h> // for statepack
 
-using namespace turnkey::types;
-using namespace turnkey::api;
-namespace ed = ax::NodeEditor;
-namespace util = ax::NodeEditor::Utilities;
-using namespace ax;
-using ax::Widgets::IconType;
+//using namespace turnkey::types;
+//using namespace turnkey::api;
+//namespace ed = ax::NodeEditor;
+//namespace util = ax::NodeEditor::Utilities;
+//using namespace ax;
+//using ax::Widgets::IconType;
 
 
-void handle_link_dragging_interactions(turnkey::api::nodos_session_data& ctx, statepack& s);
+void handle_link_dragging_interactions(turnkey::internal::s_Session.SessionData& ctx, statepack& s);
 void handle_delete_interactions(turnkey::api::nodos_session_data& ctx);
 
 

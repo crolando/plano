@@ -45,7 +45,6 @@ void turnkey::api::nodos_session_data::DrawPinIcon(const Pin& pin, bool connecte
 
 void turnkey::api::nodos_session_data::Frame(void)
 {
-    UpdateTouch();
     auto& io = ImGui::GetIO();
 
     //ImGui::Text("FPS: %.2f (%.2gms)", io.Framerate, io.Framerate ? 1000.0f / io.Framerate : 0.0f);

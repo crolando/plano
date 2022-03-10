@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <node_turnkey_internal.h>
 
 namespace turnkey {
 namespace types {
@@ -84,6 +85,10 @@ struct Link
     {
     }
 };
+
+// Treat this as opaque.
+typedef turnkey::internal::SessionData Context;
+
 
 }; // END OF NAMESPACE TYPES
 

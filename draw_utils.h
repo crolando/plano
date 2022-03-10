@@ -18,11 +18,11 @@
 
 
 
-using namespace turnkey::types;
+//using namespace turnkey::types;
 namespace ed = ax::NodeEditor;
 namespace util = ax::NodeEditor::Utilities;
-using namespace ax;
-using ax::Widgets::IconType;
+//using namespace ax;
+//using ax::Widgets::IconType;
 
 
 

@@ -9,6 +9,8 @@
 
 
 #include <node_turnkey_types.h>
+#include <node_turnkey_api.h>
+
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>
 
@@ -23,29 +25,50 @@
 #include <iostream>
 #include <sstream>
 
-
-
 // Include your "user created node definitions"
 #include <node_defs\import_animal.h>
 
 using namespace turnkey::types;
 using namespace turnkey::api;
+using namespace turnkey::internal;
+
 namespace ed = ax::NodeEditor;
 namespace util = ax::NodeEditor::Utilities;
 using namespace ax;
 using ax::Widgets::IconType;
 
 
-// Nodes and links are reflective - they know about each other.  This enforces this convention after construction
-// and attaching those objects.  Having reflective data lets you query a link and get what node owns it.
-void turnkey::api::nodos_session_data::BuildNodes(void)
+// Context management.
+Context* CreateContext()
 {
-    for (auto& node : s_Nodes)
-        BuildNode(&node);
+    return new Context();
+}
+
+void DestroyContext(Context* context)
+{
+    delete context;
+}
+
+Context* GetContext()
+{
+    return &s_Session;
+}
+
+
+void SetContext(Context* context)
+{
+    s_Session = *context;
 }
 
 
 
+
+
+
+
+void turnkey::api::nodos_session_data::RegisterNewNode(NodeDescription NewDescription) {
+    NodeRegistry[NewDescription.Type] = NewDescription;
+}
 
 
 
@@ -71,23 +94,6 @@ ax::NodeEditor::NodeId turnkey::api::nodos_session_data::GetNextLinkId()
 {
     return ax::NodeEditor::NodeId(GetNextId());
 }
-
-// TouchNode is called during config saves
-void turnkey::api::nodos_session_data::TouchNode(ax::NodeEditor::NodeId id)
-{
-    s_NodeTouchTime[id] = s_TouchTime;
-}
-
-// This is used for left pane stuff
-float turnkey::api::nodos_session_data::GetTouchProgress(ax::NodeEditor::NodeId id)
-{
-    auto it = s_NodeTouchTime.find(id);
-    if (it != s_NodeTouchTime.end() && it->second > 0.0f)
-        return (s_TouchTime - it->second) / s_TouchTime;
-    else
-        return 0.0f;
-}
-
 
 
 turnkey::types::Node* turnkey::api::nodos_session_data::FindNode(ax::NodeEditor::NodeId id)
@@ -163,7 +169,7 @@ bool turnkey::api::nodos_session_data::IsPinLinked(ax::NodeEditor::PinId id)
 // a true statement.
 // ============================================================================
 
-bool turnkey::api::nodos_session_data::isNodeAncestor(types::Node* Ancestor, types::Node* Decendent) {
+bool turnkey::internal::isNodeAncestor(types::Node* Ancestor, types::Node* Decendent) {
     auto decendent_inputs = Decendent->Inputs;
 
     qDebug() << "-------------------------------------------------------";
@@ -220,7 +226,7 @@ bool turnkey::api::nodos_session_data::isNodeAncestor(types::Node* Ancestor, typ
 }
 
 
-void turnkey::api::nodos_session_data::Initialize(void)
+void turnkey::internal::nodos_session_data::Initialize(void)
 {
 
     // NODOS DEV ===================================================
