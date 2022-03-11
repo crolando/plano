@@ -34,9 +34,9 @@ void attr_value::set(const long value) {
     t = inumber;
 }
 
-attr_type    attr_value::get_type(void) {return t;};
-attr_string& attr_value::get_string(void) {return s;};
-attr_fnumber attr_value::get_float(void) {return f;};
+attr_type    attr_value::get_type   (void) {return t;};
+attr_string& attr_value::get_string (void) {return s;};
+attr_fnumber attr_value::get_float  (void) {return f;};
 attr_inumber attr_value::get_integer(void) {return i;};
 
 std::string  attr_value::get_serial_value(attr_type& type) const {

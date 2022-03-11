@@ -6,9 +6,8 @@ using namespace turnkey::api;
 namespace turnkey {
 namespace internal {
 
-
-
-
+// This spawns a fresh node using the node definitions loaded into the registry.
+// The properties of the node are intialized with defaults from the definition.
 Node* NewRegistryNode(const std::string& NodeName) {
 
     // Standard node spawner behavior, only we construct the objects
@@ -34,6 +33,8 @@ Node* NewRegistryNode(const std::string& NodeName) {
     return &s_Session.s_Nodes.back();
 }
 
+// This restores a node using the node definitions loaded into the registry.
+// The properties of the node are copied in via deserialization of the project file.
 void RestoreRegistryNode(const std::string& NodeName,const std::string* Properties, int id)
 {
     // Standard node spawner behavior, only we construct the objects
@@ -43,6 +44,7 @@ void RestoreRegistryNode(const std::string& NodeName,const std::string* Properti
 
     // Create node object and pass the type name.
     s_Session.s_Nodes.emplace_back(id, Desc.Type.c_str());
+
     // Because we didn't call GetNextID, we must manually put the ID counter where it
     // would be, had we done so.
     SetNextId(id + 1);
@@ -53,9 +55,8 @@ void RestoreRegistryNode(const std::string& NodeName,const std::string* Properti
     for(PinDescription p : Desc.Outputs)
         s_Session.s_Nodes.back().Outputs.emplace_back(GetNextId(), p.Label.c_str(), PinType::Flow);
 
-    // Handle properties
+    // Handle propertie through deserialization
     s_Session.s_Nodes.back().Properties.deseralize(*Properties);
-
 
     // Standard scrubber from examples.
     BuildNode(&s_Session.s_Nodes.back());

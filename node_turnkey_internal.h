@@ -26,22 +26,22 @@ struct SessionData {
                        ImTextureID s_SaveIcon = nullptr;
                        ImTextureID s_RestoreIcon = nullptr;
 };
-}
+} // end of turnkey::types namespace.
 
 namespace internal {
 
 
-extern types::SessionData s_Session;      // ultimate, global session.  managed by public api calls.
+extern types::SessionData s_Session;      // ultimate, global, current session.  managed by public api calls.
 
 
 
 // internal tools all operate on current session -------------------------------------
-         int GetNextId();            // Get an unclaimed ID for runtime ID tracking
-        void SetNextId(int Id);      // Deserializer will need to bump up the ID after it fills the SessionData with used IDs.
+int          GetNextId();            // Get an unclaimed ID for runtime ID tracking
+void         SetNextId(int Id);      // Deserializer will need to bump up the ID after it fills the SessionData with used IDs.
 
-turnkey::types::Node* FindNode(ax::NodeEditor::NodeId id);    // Convert a NodeId to a Node*
-turnkey::types::Link* FindLink(ax::NodeEditor::LinkId id);    // Convert a LinkId to a Link*
-turnkey::types::Pin*  FindPin(ax::NodeEditor::PinId id);      // Convert a PinId to a Pin*
+types::Node* FindNode(ax::NodeEditor::NodeId id);    // Convert a NodeId to a Node*
+types::Link* FindLink(ax::NodeEditor::LinkId id);    // Convert a LinkId to a Link*
+types::Pin*  FindPin(ax::NodeEditor::PinId id);      // Convert a PinId to a Pin*
 
         bool IsPinLinked(ax::NodeEditor::PinId id);  //
         bool isNodeAncestor(types::Node* Ancestor, types::Node* Decendent); // traversal tool

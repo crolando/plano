@@ -13,8 +13,11 @@
 namespace turnkey {
 namespace types {
 
-struct SessionData; // Forward Decl to enable context pointers in API.
-                    // This is implemented in node_turnkey_internal.h
+// Context for the turnkey system.
+// This is a forward declaration.
+// This is fully declared in node_turnkey_internal.h
+// and then implemented in node_turnkey_internal.cpp
+struct SessionData;
 
 enum class PinType
 {
