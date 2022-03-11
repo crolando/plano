@@ -8,10 +8,13 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <node_turnkey_internal.h>
+
 
 namespace turnkey {
 namespace types {
+
+struct SessionData; // Forward Decl to enable context pointers in API.
+                    // This is implemented in node_turnkey_internal.h
 
 enum class PinType
 {
@@ -85,9 +88,6 @@ struct Link
     {
     }
 };
-
-// Treat this as opaque.
-typedef turnkey::internal::SessionData Context;
 
 
 }; // END OF NAMESPACE TYPES

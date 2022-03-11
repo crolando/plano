@@ -8,11 +8,15 @@
 
 
 
-#include <node_turnkey_types.h>
-#include <node_turnkey_api.h>
+
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>
+
+#include <node_turnkey_internal.h>
+#include <node_turnkey_types.h>
+#include <node_turnkey_api.h>
+
 
 #include <string>
 #include <vector>
@@ -39,23 +43,23 @@ using ax::Widgets::IconType;
 
 
 // Context management.
-Context* CreateContext()
+SessionData * CreateContext()
 {
-    return new Context();
+    return new SessionData();
 }
 
-void DestroyContext(Context* context)
+void DestroyContext(SessionData* context)
 {
     delete context;
 }
 
-Context* GetContext()
+SessionData* GetContext()
 {
     return &s_Session;
 }
 
 
-void SetContext(Context* context)
+void SetContext(SessionData* context)
 {
     s_Session = *context;
 }

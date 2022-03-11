@@ -20,7 +20,7 @@ using ax::Widgets::IconType;
 
 // newLinkPin is used here to cause runtime highlighting of relavent candidate pins
 // when you are dragging a link.
-void draw_nodes(turnkey::api::nodos_session_data& ctx,Pin* newLinkPin);
+void draw_nodes(turnkey::types::SessionData& ctx,Pin* newLinkPin);
 
 
 #endif // NODE_TURNKEY_DRAW_NODES_H

@@ -11,6 +11,7 @@
 namespace turnkey {
 namespace api {
 
+struct SessionData; //actually defined in node_turnkey_internal.h
 
 struct PinDescription {
     std::string Label;
@@ -49,23 +50,16 @@ struct NodeDescription {
 };
 
 // Context management.
-types::Context* CreateContext();
-void            DestroyContext(types::Context*);
-types::Context* GetContext();
-void            SetContext(types::Context* context);
+types::SessionData* CreateContext();
+void                DestroyContext(types::SessionData*);
+types::SessionData* GetContext();
+void                SetContext(types::SessionData* context);
 
-
-// Delete Context (copy from finalize)
-// Get Active Context
-// Set Active Context
 // In which these calls set a global context variable, under which other API calls operate under:
 
-// ~ Draw Bros ~
-// Frame
 
 // ~ Node Handling ~
 
-// struct NodePrototype
 
 // // Destroy Node (Node*)
 // NodePrototypeID = RegisterNode (NodePrototype prototype)

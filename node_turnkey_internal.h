@@ -3,12 +3,9 @@
 #include <node_turnkey_api.h>
 #include <texture_manager.h>
 
-
-
 namespace turnkey {
-namespace internal {
 
-
+namespace types {
 struct SessionData {
                                                  // note: nodes carry the pins
     std::vector<types::Node>       s_Nodes;      // s_Nodes is the list of instantiated nodes in the running session
@@ -29,9 +26,10 @@ struct SessionData {
                        ImTextureID s_SaveIcon = nullptr;
                        ImTextureID s_RestoreIcon = nullptr;
 };
+}
 
-
-SessionData s_Session;      // ultimate, global session.  managed by public api calls.
+namespace internal {
+types::SessionData s_Session;      // ultimate, global session.  managed by public api calls.
 
 
 
