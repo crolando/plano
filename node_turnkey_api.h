@@ -11,7 +11,6 @@
 namespace turnkey {
 namespace api {
 
-struct SessionData; //actually defined in node_turnkey_internal.h
 
 struct PinDescription {
     std::string Label;
@@ -50,16 +49,20 @@ struct NodeDescription {
 };
 
 // Context management.
+// These calls set a global context variable, under which other API calls operate on.
 types::SessionData* CreateContext();
 void                DestroyContext(types::SessionData*);
 types::SessionData* GetContext();
 void                SetContext(types::SessionData* context);
 
-// In which these calls set a global context variable, under which other API calls operate under:
-
-
 // ~ Node Handling ~
+void RegisterNewNode(NodeDescription NewDescription); // register your NodeDescriptions here to make the runtime aware of your node type.
 
+// Overall System Start / Frame / Stop calls
+// TODO: Init/Finailze should amost certainly be ported to the above context systems.
+void Initialize(void); // Creates sets up and configures imgui_node_editor backend, deserializes project file.
+void Frame(void);      // Draws nodes and handles interactions.
+void Finalize(void);   // Cleanup.
 
 // // Destroy Node (Node*)
 // NodePrototypeID = RegisterNode (NodePrototype prototype)
@@ -72,6 +75,8 @@ void                SetContext(types::SessionData* context);
 // ~ Serialization ~
 // LoadNodesAndLinksFromBuffer(void*)
 // SaveNodesAndLinksToBuffer(out_size, void* buffer);
+
+
 
 } // end api namespace
 } // end turnkey namespace

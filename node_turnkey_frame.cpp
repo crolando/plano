@@ -1,4 +1,4 @@
-#include <node_turnkey_api.h>
+#include <node_turnkey_internal.h>
 #include <imgui.h>
 #include "utilities/widgets.h"
 #include <imgui_node_editor.h>
@@ -14,42 +14,24 @@
 
 using namespace turnkey::types;
 using namespace turnkey::api;
+using namespace turnkey::internal;
 namespace ed = ax::NodeEditor;
 namespace util = ax::NodeEditor::Utilities;
 using namespace ax;
 using ax::Widgets::IconType;
 
 
-void turnkey::api::nodos_session_data::DrawPinIcon(const Pin& pin, bool connected, int alpha)
-{
-    IconType iconType;
-    ImColor  color = GetIconColor(pin.Type);
-    color.Value.w = alpha / 255.0f;
-    switch (pin.Type)
-    {
-        case PinType::Flow:     iconType = IconType::Flow;   break;
-        case PinType::Bool:     iconType = IconType::Circle; break;
-        case PinType::Int:      iconType = IconType::Circle; break;
-        case PinType::Float:    iconType = IconType::Circle; break;
-        case PinType::String:   iconType = IconType::Circle; break;
-        case PinType::Object:   iconType = IconType::Circle; break;
-        case PinType::Function: iconType = IconType::Circle; break;
-        case PinType::Delegate: iconType = IconType::Square; break;
-        default:
-            return;
-    }
-
-    ax::Widgets::Icon(ImVec2(s_PinIconSize, s_PinIconSize), iconType, connected, color, ImColor(32, 32, 32, alpha));
-};
+namespace turnkey {
+namespace api {
 
 
-void turnkey::api::nodos_session_data::Frame(void)
+void Frame(void)
 {
     auto& io = ImGui::GetIO();
 
     //ImGui::Text("FPS: %.2f (%.2gms)", io.Framerate, io.Framerate ? 1000.0f / io.Framerate : 0.0f);
 
-    ed::SetCurrentEditor(m_Editor);
+    ed::SetCurrentEditor(s_Session.m_Editor);
 
     //auto& style = ImGui::GetStyle();
 
@@ -85,20 +67,20 @@ void turnkey::api::nodos_session_data::Frame(void)
     // NODOS DEV - draw nodes
     // newLinkPin is passed to allow highlighting of valid candiate type-safe pin destinations when link-drawing from another pin.
     // ====================================================================================================================================
-    draw_nodes(*this,s.newLinkPin);
+    draw_nodes(s.newLinkPin);
 
     // ====================================================================================================================================
     // NODOS DEV - draw links
     // ====================================================================================================================================
-    for (auto& link : s_Links)
+    for (auto& link : s_Session.s_Links)
         ed::Link(link.ID, link.StartPinID, link.EndPinID, link.Color, 2.0f);
 
     // ====================================================================================================================================
     // NODOS DEV - Handle link-dragging interactions in immediate mode.
     if (!s.createNewNode)
     {
-        handle_link_dragging_interactions(*this,s);
-        handle_delete_interactions(*this);
+        handle_link_dragging_interactions(s);
+        handle_delete_interactions();
 
     } // Close bracket for "if (!s.createNewNode)"
 
@@ -224,7 +206,7 @@ void turnkey::api::nodos_session_data::Frame(void)
         Node* node = nullptr;
 
         // Populate the context right click menu with all the nodes in the registry.
-        for(auto nodos: NodeRegistry){
+        for(auto nodos: s_Session.NodeRegistry){
             if (ImGui::MenuItem(nodos.first.c_str())){
                 node = NewRegistryNode(nodos.first);
             }
@@ -232,41 +214,41 @@ void turnkey::api::nodos_session_data::Frame(void)
 
         // Populate the right click menu with the example nodes
         if (ImGui::MenuItem("Input Action"))
-            node = SpawnInputActionNode(this);
+            node = SpawnInputActionNode();
         if (ImGui::MenuItem("Output Action"))
-            node = SpawnOutputActionNode(this);
+            node = SpawnOutputActionNode();
         if (ImGui::MenuItem("Branch"))
-            node = SpawnBranchNode(this);
+            node = SpawnBranchNode();
         if (ImGui::MenuItem("Do N"))
-            node = SpawnDoNNode(this);
+            node = SpawnDoNNode();
         if (ImGui::MenuItem("Set Timer"))
-            node = SpawnSetTimerNode(this);
+            node = SpawnSetTimerNode();
         if (ImGui::MenuItem("Less"))
-            node = SpawnLessNode(this);
+            node = SpawnLessNode();
         if (ImGui::MenuItem("Weird"))
-            node = SpawnWeirdNode(this);
+            node = SpawnWeirdNode();
         if (ImGui::MenuItem("Trace by Channel"))
-            node = SpawnTraceByChannelNode(this);
+            node = SpawnTraceByChannelNode();
         if (ImGui::MenuItem("Print String"))
-            node = SpawnPrintStringNode(this);
+            node = SpawnPrintStringNode();
         ImGui::Separator();
         if (ImGui::MenuItem("Comment"))
-            node = SpawnComment(this);
+            node = SpawnComment();
         ImGui::Separator();
         if (ImGui::MenuItem("Sequence"))
-            node = SpawnTreeSequenceNode(this);
+            node = SpawnTreeSequenceNode();
         if (ImGui::MenuItem("Move To"))
-            node = SpawnTreeTaskNode(this);
+            node = SpawnTreeTaskNode();
         if (ImGui::MenuItem("Random Wait"))
-            node = SpawnTreeTask2Node(this);
+            node = SpawnTreeTask2Node();
         ImGui::Separator();
         if (ImGui::MenuItem("Message"))
-            node = SpawnMessageNode(this);
+            node = SpawnMessageNode();
         ImGui::Separator();
         if (ImGui::MenuItem("Transform"))
-            node = SpawnHoudiniTransformNode(this);
+            node = SpawnHoudiniTransformNode();
         if (ImGui::MenuItem("Group"))
-            node = SpawnHoudiniGroupNode(this);
+            node = SpawnHoudiniGroupNode();
 
         // Do post-node-spawn actions here.
         if (node)
@@ -291,8 +273,8 @@ void turnkey::api::nodos_session_data::Frame(void)
                         if (startPin->Kind == ed::PinKind::Input)
                             std::swap(startPin, endPin);
 
-                        s_Links.emplace_back(Link(GetNextId(), startPin->ID, endPin->ID));
-                        s_Links.back().Color = GetIconColor(startPin->Type);
+                        s_Session.s_Links.emplace_back(Link(GetNextId(), startPin->ID, endPin->ID));
+                        s_Session.s_Links.back().Color = GetIconColor(startPin->Type);
 
                         break;
                     }
@@ -380,4 +362,6 @@ void turnkey::api::nodos_session_data::Frame(void)
 
     //ImGui::ShowTestWindow();
     //ImGui::ShowMetricsWindow();
+}
+}
 }

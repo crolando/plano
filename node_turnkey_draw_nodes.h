@@ -11,16 +11,12 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>
 
-using namespace turnkey::types;
-using namespace turnkey::api;
-namespace ed = ax::NodeEditor;
-namespace util = ax::NodeEditor::Utilities;
-using namespace ax;
-using ax::Widgets::IconType;
-
 // newLinkPin is used here to cause runtime highlighting of relavent candidate pins
 // when you are dragging a link.
-void draw_nodes(turnkey::types::SessionData& ctx,Pin* newLinkPin);
 
-
+namespace turnkey {
+namespace internal {
+void draw_nodes(turnkey::types::Pin* newLinkPin);
+}
+}
 #endif // NODE_TURNKEY_DRAW_NODES_H

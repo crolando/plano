@@ -1,6 +1,7 @@
+#include <node_turnkey_internal.h>
 #include <node_turnkey_handle_interactions.h>
 
-
+using namespace turnkey::internal;
 // ====================================================================================================================================
 // NODOS DEV - Handle link-dragging interactions in immediate mode.
 // BeginCreate() - Handle dragging a link out of a pin
@@ -12,7 +13,7 @@
 //         RejectNewItem()
 // EndCreate()
 // ====================================================================================================================================
-void handle_link_dragging_interactions(turnkey::api::nodos_session_data& ctx, statepack& s)
+void handle_link_dragging_interactions(statepack& s)
 {
 
     // ====================================================================================================================================
@@ -48,8 +49,8 @@ void handle_link_dragging_interactions(turnkey::api::nodos_session_data& ctx, st
         if (ed::QueryNewLink(&startPinId, &endPinId))
         {
             // setup stack vars for tests
-            auto startPin = ctx.FindPin(startPinId);
-            auto endPin   = ctx.FindPin(endPinId);
+            auto startPin = FindPin(startPinId);
+            auto endPin   = FindPin(endPinId);
             s.newLinkPin = startPin ? startPin : endPin;
 
             // in this system you can drag from inputs to outputs
@@ -71,7 +72,7 @@ void handle_link_dragging_interactions(turnkey::api::nodos_session_data& ctx, st
                 {
                     ed::RejectNewItem(ImColor(255, 0, 0), 2.0f);
                 }
-                else if (ctx.isNodeAncestor(endNode,startNode)){
+                else if (isNodeAncestor(endNode,startNode)){
                     showLabel("x Connection would create a loop", ImColor(45, 32, 32, 180));
                     ed::RejectNewItem(ImColor(255, 0, 0), 2.0f);
                 }
@@ -95,8 +96,9 @@ void handle_link_dragging_interactions(turnkey::api::nodos_session_data& ctx, st
                     showLabel("+ Create Link", ImColor(32, 45, 32, 180));
                     if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f))
                     {
-                        ctx.s_Links.emplace_back(Link(ctx.GetNextId(), startPinId, endPinId));
-                        ctx.s_Links.back().Color = GetIconColor(startPin->Type);
+
+                        //s_Session.s_Links.emplace_back(Link(GetNextId(), startPinId, endPinId));
+                        s_Session.s_Links.back().Color = GetIconColor(startPin->Type);
                     }
                 }
             } // Done with pin connection interaction handling
@@ -111,14 +113,14 @@ void handle_link_dragging_interactions(turnkey::api::nodos_session_data& ctx, st
         ed::PinId pinId = 0;
         if (ed::QueryNewNode(&pinId))
         {
-            s.newLinkPin = ctx.FindPin(pinId);
+            s.newLinkPin = FindPin(pinId);
             if (s.newLinkPin)
                 showLabel("+ Create Node", ImColor(32, 45, 32, 180));
 
             if (ed::AcceptNewItem())
             {
                 s.createNewNode  = true;
-                s.newNodeLinkPin = ctx.FindPin(pinId);
+                s.newNodeLinkPin = FindPin(pinId);
                 s.newLinkPin = nullptr;
                 ed::Suspend();
                 ImGui::OpenPopup("Create New Node");
@@ -145,7 +147,7 @@ void handle_link_dragging_interactions(turnkey::api::nodos_session_data& ctx, st
 //         AcceptDeletedItem()
 // EndDelete()
 // ====================================================================================================================================
-void handle_delete_interactions(turnkey::api::nodos_session_data& ctx)
+void handle_delete_interactions()
 {
     if (ed::BeginDelete())
     {
@@ -154,9 +156,9 @@ void handle_delete_interactions(turnkey::api::nodos_session_data& ctx)
         {
             if (ed::AcceptDeletedItem())
             {
-                auto id = std::find_if(ctx.s_Links.begin(), ctx.s_Links.end(), [linkId](auto& link) { return link.ID == linkId; });
-                if (id != ctx.s_Links.end())
-                    ctx.s_Links.erase(id);
+                auto id = std::find_if(s_Session.s_Links.begin(), s_Session.s_Links.end(), [linkId](auto& link) { return link.ID == linkId; });
+                if (id != s_Session.s_Links.end())
+                    s_Session.s_Links.erase(id);
             }
         }
 
@@ -165,9 +167,9 @@ void handle_delete_interactions(turnkey::api::nodos_session_data& ctx)
         {
             if (ed::AcceptDeletedItem())
             {
-                auto id = std::find_if(ctx.s_Nodes.begin(), ctx.s_Nodes.end(), [nodeId](auto& node) { return node.ID == nodeId; });
-                if (id != ctx.s_Nodes.end())
-                    ctx.s_Nodes.erase(id);
+                auto id = std::find_if(s_Session.s_Nodes.begin(), s_Session.s_Nodes.end(), [nodeId](auto& node) { return node.ID == nodeId; });
+                if (id != s_Session.s_Nodes.end())
+                    s_Session.s_Nodes.erase(id);
             }
         }
     }

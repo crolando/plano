@@ -1,3 +1,4 @@
+#include <node_turnkey_internal.h>
 #include <node_turnkey_draw_nodes.h>
 #include <draw_utils.h>
 
@@ -7,20 +8,23 @@
 
 using namespace turnkey::types;
 using namespace turnkey::api;
+using namespace turnkey::internal;
 namespace ed = ax::NodeEditor;
 namespace util = ax::NodeEditor::Utilities;
 using namespace ax;
 using ax::Widgets::IconType;
 
-void draw_blueprint_style(turnkey::api::nodos_session_data& ctx, Pin* newLinkPin)
+namespace turnkey {
+namespace internal {
+void draw_blueprint_style(Pin* newLinkPin)
 {
     ImGui::GetCursorScreenPos();
-    util::BlueprintNodeBuilder builder(ctx.s_HeaderBackground, ctx.textures.GetTextureWidth(ctx.s_HeaderBackground), ctx.textures.GetTextureHeight(ctx.s_HeaderBackground));
+    util::BlueprintNodeBuilder builder(s_Session.s_HeaderBackground, s_Session.textures.GetTextureWidth(s_Session.s_HeaderBackground), s_Session.textures.GetTextureHeight(s_Session.s_HeaderBackground));
 
     // ====================================================================================================================================
     // NODOS DEV - draw nodes of type Blueprint and Simple
     // ====================================================================================================================================
-    for (auto& node : ctx.s_Nodes)
+    for (auto& node : s_Session.s_Nodes)
     {
         // Guard for non-blueprints and non-simple nodes --------------------------------------------------------
         if (node.Type != NodeType::Blueprint && node.Type != NodeType::Simple)
@@ -66,7 +70,7 @@ void draw_blueprint_style(turnkey::api::nodos_session_data& ctx, Pin* newLinkPin
                                 ImGui::TextUnformatted(output.Name.c_str());
                                 ImGui::Spring(0);
                             }
-                            ctx.DrawPinIcon(output, ctx.IsPinLinked(output.ID), (int)(alpha * 255));
+                            DrawPinIcon(output, IsPinLinked(output.ID), (int)(alpha * 255));
                             ImGui::Spring(0, ImGui::GetStyle().ItemSpacing.x / 2);
                             ImGui::EndHorizontal();
                             ImGui::PopStyleVar();
@@ -92,7 +96,7 @@ void draw_blueprint_style(turnkey::api::nodos_session_data& ctx, Pin* newLinkPin
 
                 builder.Input(input.ID);
                 ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
-                ctx.DrawPinIcon(input, ctx.IsPinLinked(input.ID), (int)(alpha * 255));
+                DrawPinIcon(input, IsPinLinked(input.ID), (int)(alpha * 255));
                 ImGui::Spring(0);
                 if (!input.Name.empty())
                 {
@@ -120,8 +124,8 @@ void draw_blueprint_style(turnkey::api::nodos_session_data& ctx, Pin* newLinkPin
                 ImGui::Spring(1, 0);
             } else {
                 builder.Middle();
-                if(ctx.NodeRegistry.count(node.Name) > 0){
-                    ctx.NodeRegistry[node.Name].DrawAndEditProperties(node.Properties);
+                if(s_Session.NodeRegistry.count(node.Name) > 0){
+                    s_Session.NodeRegistry[node.Name].DrawAndEditProperties(node.Properties);
                 }else{
                     im_draw_basic_widgets(node.Properties);
                 }
@@ -167,7 +171,7 @@ void draw_blueprint_style(turnkey::api::nodos_session_data& ctx, Pin* newLinkPin
                     ImGui::TextUnformatted(output.Name.c_str());
                 }
                 ImGui::Spring(0);
-                ctx.DrawPinIcon(output, ctx.IsPinLinked(output.ID), (int)(alpha * 255));
+                DrawPinIcon(output, IsPinLinked(output.ID), (int)(alpha * 255));
                 ImGui::PopStyleVar();
                 builder.EndOutput();
             }
@@ -175,12 +179,12 @@ void draw_blueprint_style(turnkey::api::nodos_session_data& ctx, Pin* newLinkPin
     }
 }
 
-void draw_tree_style(turnkey::api::nodos_session_data& ctx, Pin* newLinkPin)
+void draw_tree_style(Pin* newLinkPin)
 {
     // ====================================================================================================================================
     // NODOS DEV - draw nodes of type Tree
     // ====================================================================================================================================
-    for (auto& node : ctx.s_Nodes)
+    for (auto& node : s_Session.s_Nodes)
     {
         if (node.Type != NodeType::Tree)
             continue;
@@ -319,12 +323,12 @@ void draw_tree_style(turnkey::api::nodos_session_data& ctx, Pin* newLinkPin)
 
 }
 
-void draw_houdini_style(turnkey::api::nodos_session_data& ctx, Pin* newLinkPin)
+void draw_houdini_style(Pin* newLinkPin)
 {
     // ====================================================================================================================================
     // NODOS DEV - draw nodes of type Houdini
     // ====================================================================================================================================
-    for (auto& node : ctx.s_Nodes)
+    for (auto& node : s_Session.s_Nodes)
     {
         if (node.Type != NodeType::Houdini)
             continue;
@@ -483,12 +487,12 @@ void draw_houdini_style(turnkey::api::nodos_session_data& ctx, Pin* newLinkPin)
 
 }
 
-void draw_comment_style(turnkey::api::nodos_session_data&ctx, Pin* newLinkPin)
+void draw_comment_style(Pin* newLinkPin)
 {
     // ====================================================================================================================================
     // NODOS DEV - draw nodes of type Comment
     // ====================================================================================================================================
-    for (auto& node : ctx.s_Nodes)
+    for (auto& node : s_Session.s_Nodes)
     {
         if (node.Type != NodeType::Comment)
             continue;
@@ -552,10 +556,12 @@ void draw_comment_style(turnkey::api::nodos_session_data&ctx, Pin* newLinkPin)
 
 // newLinkPin is used here to cause runtime highlighting of relavent candidate pins
 // when you are dragging a link.
-void draw_nodes(turnkey::api::nodos_session_data& ctx, Pin* newLinkPin)
+void draw_nodes(Pin* newLinkPin)
 {
-    draw_blueprint_style(ctx,newLinkPin);
-    draw_tree_style(ctx,newLinkPin);
-    draw_houdini_style(ctx,newLinkPin);
-    draw_comment_style(ctx,newLinkPin);
+    draw_blueprint_style(newLinkPin);
+    draw_tree_style(newLinkPin);
+    draw_houdini_style(newLinkPin);
+    draw_comment_style(newLinkPin);
 }
+} // inner namespace
+} // outer namespace

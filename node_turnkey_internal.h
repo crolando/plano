@@ -18,7 +18,7 @@ struct SessionData {
                               int  s_NextId = 1; // The session needs to keep track of what the next unclaimed ID for nodes, pins & links.
 
 
-                         const int s_PinIconSize = 24;
+                               int s_PinIconSize = 24;
                        std::string s_BlueprintData;
     ax::NodeEditor::EditorContext* m_Editor = nullptr;
                        ImTextureID s_HeaderBackground = nullptr;
@@ -29,7 +29,9 @@ struct SessionData {
 }
 
 namespace internal {
-types::SessionData s_Session;      // ultimate, global session.  managed by public api calls.
+
+
+extern types::SessionData s_Session;      // ultimate, global session.  managed by public api calls.
 
 
 
@@ -79,7 +81,7 @@ bool non_static_config_save_settings(const char* data, size_t size, ax::NodeEdit
 
 static bool static_config_save_settings(const char* data, size_t size, ax::NodeEditor::SaveReasonFlags reason, void* userPointer)
 {
-    nodos_session_data* obj = (nodos_session_data*) userPointer;
+    SessionData* obj = (SessionData*) userPointer;
     return obj->non_static_config_save_settings(data,size,reason);
 };
 
@@ -99,7 +101,7 @@ size_t non_static_config_load_settings(char* data)
 
 static size_t static_config_load_settings(char* data, void* userPointer)
 {
-    nodos_session_data* obj = (nodos_session_data*) userPointer;
+    SessionData* obj = (SessionData*) userPointer;
     return obj->non_static_config_load_settings(data);
 };
 
@@ -117,7 +119,7 @@ size_t non_static_config_load_node_settings(ax::NodeEditor::NodeId nodeId, char*
 
 static size_t static_config_load_node_settings(ax::NodeEditor::NodeId nodeId, char* data, void* userPointer)
 {
-    nodos_session_data* obj = (nodos_session_data*) userPointer;
+    SessionData* obj = (SessionData*) userPointer;
     return obj->non_static_config_load_node_settings(nodeId,data);
 };
 
@@ -135,7 +137,7 @@ bool non_static_config_save_node_settings(ax::NodeEditor::NodeId nodeId, const c
 
 static bool static_config_save_node_settings(ax::NodeEditor::NodeId nodeId, const char* data, size_t size, ax::NodeEditor::SaveReasonFlags reason, void* userPointer)
 {
-    nodos_session_data* obj = (nodos_session_data*) userPointer;
+    SessionData* obj = (SessionData*) userPointer;
     return obj->non_static_config_save_node_settings(nodeId,data,size,reason);
 };
 */

@@ -11,6 +11,7 @@
 
 
 #define IMGUI_DEFINE_MATH_OPERATORS
+
 #include <imgui_internal.h>
 
 #include <node_turnkey_internal.h>
@@ -23,7 +24,6 @@
 #include <map>
 #include <algorithm>
 #include <utility>
-#include <QDebug>
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -40,6 +40,9 @@ namespace ed = ax::NodeEditor;
 namespace util = ax::NodeEditor::Utilities;
 using namespace ax;
 using ax::Widgets::IconType;
+
+namespace turnkey {
+namespace api {
 
 
 // Context management.
@@ -70,10 +73,6 @@ void SetContext(SessionData* context)
 
 
 
-void turnkey::api::nodos_session_data::RegisterNewNode(NodeDescription NewDescription) {
-    NodeRegistry[NewDescription.Type] = NewDescription;
-}
-
 
 
 
@@ -93,61 +92,6 @@ void turnkey::api::nodos_session_data::RegisterNewNode(NodeDescription NewDescri
 //{
 //    return ed::NodeId(GetNextId());
 //}
-
-ax::NodeEditor::NodeId turnkey::api::nodos_session_data::GetNextLinkId()
-{
-    return ax::NodeEditor::NodeId(GetNextId());
-}
-
-
-turnkey::types::Node* turnkey::api::nodos_session_data::FindNode(ax::NodeEditor::NodeId id)
-{
-    for (auto& node : s_Nodes)
-        if (node.ID == id)
-            return &node;
-
-    return nullptr;
-}
-
-turnkey::types::Link* turnkey::api::nodos_session_data::FindLink(ax::NodeEditor::LinkId id)
-{
-    for (auto& link : s_Links)
-        if (link.ID == id)
-            return &link;
-
-    return nullptr;
-}
-
-turnkey::types::Pin* turnkey::api::nodos_session_data::FindPin(ax::NodeEditor::PinId id)
-{
-    if (!id)
-        return nullptr;
-
-    for (auto& node : s_Nodes)
-    {
-        for (auto& pin : node.Inputs)
-            if (pin.ID == id)
-                return &pin;
-
-        for (auto& pin : node.Outputs)
-            if (pin.ID == id)
-                return &pin;
-    }
-
-    return nullptr;
-}
-
-bool turnkey::api::nodos_session_data::IsPinLinked(ax::NodeEditor::PinId id)
-{
-    if (!id)
-        return false;
-
-    for (auto& link : s_Links)
-        if (link.StartPinID == id || link.EndPinID == id)
-            return true;
-
-    return false;
-}
 
 
 
@@ -173,69 +117,14 @@ bool turnkey::api::nodos_session_data::IsPinLinked(ax::NodeEditor::PinId id)
 // a true statement.
 // ============================================================================
 
-bool turnkey::internal::isNodeAncestor(types::Node* Ancestor, types::Node* Decendent) {
-    auto decendent_inputs = Decendent->Inputs;
-
-    qDebug() << "-------------------------------------------------------";
-    qDebug() << "Testing the ancestors of: " << Decendent->Name.c_str();
-    qDebug() << "-------------------------------------------------------";
-
-    // Early return for nodes that don't have inputs
-    if(decendent_inputs.size() == 0) {
-        qDebug() << Decendent->Name.c_str() <<  " has no input on pins ... skipping";
-        return false;
-    }
-
-    // Handle nodes that have inputs.
-    for(Pin p : decendent_inputs) {
-        // Early return for unlinked pins
-        if(!IsPinLinked(p.ID)) {
-            qDebug() << p.Node->Name.c_str() <<  " has no input on pin: " << p.Name.c_str() << " ... skipping";
-            continue;
-        }
-        // Handle a linked pin.  Pins do NOT know who they are attached to.
-        // We have to search the links for the connected node.
-        std::vector<Node*> AncestorNodes;
-        for (auto& link : s_Links) {
-            if(link.EndPinID == p.ID) {
-                auto n = FindPin(link.StartPinID)->Node;
-                qDebug() << n->Name.c_str() << "Was found as an ancestor node";
-
-                if (n->ID == Ancestor->ID) {
-                    qDebug() << "Returning True because: " << n->Name.c_str() << " == " << Ancestor->Name.c_str();
-                    return true;
-                } else {
-                    AncestorNodes.push_back(n);
-                }
-            }
-        }
-
-        for(auto AncestorNode : AncestorNodes) {
-            qDebug() << "Testing " << AncestorNode->Name.c_str() << "...";
-            if(!AncestorNode) {
-                qDebug() << "Something very bad happened here";
-                return false;
-            } else {
-                if(AncestorNode->ID == Ancestor->ID) {
-                    qDebug() << "Returning True because: " << AncestorNode->Name.c_str() << " == " << Ancestor->Name.c_str();
-                    return true;
-                } else {
-                   if(isNodeAncestor(Ancestor,AncestorNode))
-                       return true;
-                } // here we let pass through!
-            qDebug() << "Got no matches under: " << AncestorNode->Name.c_str();
-            }
-        } // Done searching ancestor nodes
-    } // Done searching pins
-}
 
 
-void turnkey::internal::nodos_session_data::Initialize(void)
+void Initialize(void)
 {
 
     // NODOS DEV ===================================================
     // Register nodes from the user's node description forms.    
-    RegisterNewNode(node_defs::import_animal::ConstructDefinition());
+    //RegisterNewNode(node_defs::import_animal::ConstructDefinition());
 
     // NODOS DEV ===================================================
     // Config is what this system calls a mechanism to move node-related data to and from
@@ -265,14 +154,14 @@ void turnkey::internal::nodos_session_data::Initialize(void)
     ed::Config config;
 
     // https://stackoverflow.com/questions/19808054/convert-c-function-pointer-to-c-function-pointer/19808250#19808250
-    config.UserPointer = (void*) this;
-    config.SaveSettings = turnkey::api::nodos_session_data::static_config_save_settings;
-    config.LoadSettings = turnkey::api::nodos_session_data::static_config_load_settings;
-    config.LoadNodeSettings = turnkey::api::nodos_session_data::static_config_load_node_settings;
-    config.SaveNodeSettings = turnkey::api::nodos_session_data::static_config_save_node_settings;
+    //config.UserPointer = (void*) this;
+    //config.SaveSettings = turnkey::api::nodos_session_data::static_config_save_settings;
+    //config.LoadSettings = turnkey::api::nodos_session_data::static_config_load_settings;
+    //config.LoadNodeSettings = turnkey::api::nodos_session_data::static_config_load_node_settings;
+    //config.SaveNodeSettings = turnkey::api::nodos_session_data::static_config_save_node_settings;
 
-    m_Editor = ed::CreateEditor(&config);
-    ed::SetCurrentEditor(m_Editor);
+    s_Session.m_Editor = ed::CreateEditor(&config);
+    ed::SetCurrentEditor(s_Session.m_Editor);
 
     // ====================================================================================================================================
     // NODOS DEV - populate graph with nodes.  This should happen on project loads.
@@ -313,9 +202,9 @@ void turnkey::internal::nodos_session_data::Initialize(void)
     //
     //s_Links.push_back(Link(GetNextLinkId(), s_Nodes[14].Outputs[0].ID, s_Nodes[15].Inputs[0].ID));
 
-    s_HeaderBackground = textures.LoadTexture("Data/BlueprintBackground.png");
-    s_SaveIcon         = textures.LoadTexture("Data/ic_save_white_24dp.png");
-    s_RestoreIcon      = textures.LoadTexture("Data/ic_restore_white_24dp.png");
+    s_Session.s_HeaderBackground = s_Session.textures.LoadTexture("Data/BlueprintBackground.png");
+    s_Session.s_SaveIcon         = s_Session.textures.LoadTexture("Data/ic_save_white_24dp.png");
+    s_Session.s_RestoreIcon      = s_Session.textures.LoadTexture("Data/ic_restore_white_24dp.png");
 
 
     // Extremely bad deserialization system
@@ -362,7 +251,7 @@ void turnkey::internal::nodos_session_data::Initialize(void)
         // PHASE TWO - INSTANTIATE NODES ------------------------------------------
         // Use data in Nodename and Properties to instantiate nodes from the registry
         // (new node definition system)
-        if (NodeRegistry.count(NodeName) > 0)
+        if (s_Session.NodeRegistry.count(NodeName) > 0)
         {
             RestoreRegistryNode(NodeName,&Properties,id);
         } else {
@@ -372,24 +261,24 @@ void turnkey::internal::nodos_session_data::Initialize(void)
             // Call the appropriate example node spawner.  You must do this
             // because the spawners have the pin layout information, and pin instantiation
             // must be done to keep the ID alignment.
-                     if (NodeName == "InputAction Fire") {SpawnInputActionNode(this);}
-                else if (NodeName == "Branch")           {SpawnBranchNode(this);}
-                else if (NodeName == "Do N")             {SpawnDoNNode(this);}
-                else if (NodeName == "OutputAction")     {SpawnOutputActionNode(this);}
-                else if (NodeName == "Print String")     {SpawnPrintStringNode(this);}
-                else if (NodeName == "")                 {SpawnMessageNode(this);}
-                else if (NodeName == "Set Timer")        {SpawnSetTimerNode(this);}
-                else if (NodeName == "<")                {SpawnLessNode(this);}
-                else if (NodeName == "o.O")              {SpawnWeirdNode(this);}
-                else if (NodeName == "Single Line Trace by Channel") {SpawnTraceByChannelNode(this);}
-                else if (NodeName == "Sequence")         {SpawnTreeSequenceNode(this);}
-                else if (NodeName == "Move To")          {SpawnTreeTaskNode(this);}
-                else if (NodeName == "Random Wait")      {SpawnTreeTask2Node(this);}
-                else if (NodeName == "Test Comment")     {SpawnComment(this);}
-                else if (NodeName == "Transform")        {SpawnHoudiniTransformNode(this);}
-                else if (NodeName == "Group")            {SpawnHoudiniGroupNode(this);}
+                     if (NodeName == "InputAction Fire") {SpawnInputActionNode();}
+                else if (NodeName == "Branch")           {SpawnBranchNode();}
+                else if (NodeName == "Do N")             {SpawnDoNNode();}
+                else if (NodeName == "OutputAction")     {SpawnOutputActionNode();}
+                else if (NodeName == "Print String")     {SpawnPrintStringNode();}
+                else if (NodeName == "")                 {SpawnMessageNode();}
+                else if (NodeName == "Set Timer")        {SpawnSetTimerNode();}
+                else if (NodeName == "<")                {SpawnLessNode();}
+                else if (NodeName == "o.O")              {SpawnWeirdNode();}
+                else if (NodeName == "Single Line Trace by Channel") {SpawnTraceByChannelNode();}
+                else if (NodeName == "Sequence")         {SpawnTreeSequenceNode();}
+                else if (NodeName == "Move To")          {SpawnTreeTaskNode();}
+                else if (NodeName == "Random Wait")      {SpawnTreeTask2Node();}
+                else if (NodeName == "Test Comment")     {SpawnComment();}
+                else if (NodeName == "Transform")        {SpawnHoudiniTransformNode();}
+                else if (NodeName == "Group")            {SpawnHoudiniGroupNode();}
                 else {  throw std::invalid_argument("Deserializer encountered a unrecognized legacy node name: " + NodeName);}
-                s_Nodes.back().Properties.deseralize(Properties);
+                s_Session.s_Nodes.back().Properties.deseralize(Properties);
         } // Done with node instantiation.
     } // Done with a node processing section.  Loop back if there's another node (more lines in getline)
     // Make pins and node reference reflective.
@@ -397,36 +286,36 @@ void turnkey::internal::nodos_session_data::Initialize(void)
     //auto& io = ImGui::GetIO();
 }
 
-void turnkey::api::nodos_session_data::Finalize(void)
+void Finalize(void)
 {
-    textures.DestroyTexture(s_RestoreIcon);
-    textures.DestroyTexture(s_SaveIcon);
-    textures.DestroyTexture(s_HeaderBackground);
-    s_RestoreIcon = nullptr;
-    s_SaveIcon = nullptr;
-    s_HeaderBackground = nullptr;
+    s_Session.textures.DestroyTexture(s_Session.s_RestoreIcon);
+    s_Session.textures.DestroyTexture(s_Session.s_SaveIcon);
+    s_Session.textures.DestroyTexture(s_Session.s_HeaderBackground);
+    s_Session.s_RestoreIcon = nullptr;
+    s_Session.s_SaveIcon = nullptr;
+    s_Session.s_HeaderBackground = nullptr;
 
     // Extremely bad serilzation system    
     std::ofstream out("nodos_project.txt");
     // For every node in s_Nodes...
-    for (unsigned long long i = 0; i < s_Nodes.size(); i++)
+    for (unsigned long long i = 0; i < s_Session.s_Nodes.size(); i++)
     {
         // First line is ID
-        out << s_Nodes[i].ID.Get() << std::endl;
+        out << s_Session.s_Nodes[i].ID.Get() << std::endl;
         // Next line is Name (node type)
-        out << s_Nodes[i].Name << std::endl;
+        out << s_Session.s_Nodes[i].Name << std::endl;
         int count = 0;
         // The next line is a number describing the count of properties lines
-        std::string props = s_Nodes[i].Properties.serialize(count);
+        std::string props = s_Session.s_Nodes[i].Properties.serialize(count);
         out << count << std::endl;
         // Then the next lines are the actual property lines.
         out << props;
     }
 
-    if (m_Editor)
+    if (s_Session.m_Editor)
     {
-        ed::DestroyEditor(m_Editor);
-        m_Editor = nullptr;
+        ed::DestroyEditor(s_Session.m_Editor);
+        s_Session.m_Editor = nullptr;
     }
 }
 
@@ -520,4 +409,5 @@ void ShowStyleEditor(bool* show = nullptr)
     ImGui::End();
 }
 
-
+} // inner namespace
+} // outer namespace
