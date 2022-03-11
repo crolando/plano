@@ -29,9 +29,6 @@
 #include <iostream>
 #include <sstream>
 
-// Include your "user created node definitions"
-#include <node_defs\import_animal.h>
-
 using namespace turnkey::types;
 using namespace turnkey::api;
 using namespace turnkey::internal;
@@ -67,7 +64,9 @@ void SetContext(SessionData* context)
     s_Session = *context;
 }
 
-
+void RegisterNewNode(api::NodeDescription NewDescription) {
+    s_Session.NodeRegistry[NewDescription.Type] = NewDescription;
+}
 
 
 

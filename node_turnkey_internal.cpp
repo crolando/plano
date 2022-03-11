@@ -138,9 +138,7 @@ bool IsPinLinked(ed::PinId id)
 }
 
 
-void RegisterNewNode(api::NodeDescription NewDescription) {
-    s_Session.NodeRegistry[NewDescription.Type] = NewDescription;
-}
+
 
 using ax::Drawing::IconType;
 
