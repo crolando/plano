@@ -10,7 +10,6 @@
 #include <map>
 #include <algorithm>
 #include <utility>
-#include <QDebug>
 #include <cstring>
 #include <fstream>
 #include <iostream>

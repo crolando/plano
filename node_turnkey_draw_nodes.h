@@ -6,7 +6,6 @@
 #include <imgui_node_editor.h>
 #include <example_node_spawner.h>
 #include <example_property_im_draw.h>
-#include <QDebug>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>

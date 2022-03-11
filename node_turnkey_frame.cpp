@@ -4,7 +4,7 @@
 #include <imgui_node_editor.h>
 #include <example_node_spawner.h>
 #include <example_property_im_draw.h>
-#include <QDebug>
+
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>
@@ -331,7 +331,6 @@ void Frame(void)
             ax::NodeEditor::GetSelectedNodes(node_buffer,sel_nodes);
             for (int i = 0; i < sel_nodes; i++) {
                 Node* Node = FindNode(node_buffer[i]);
-                qDebug() << "Selected Node ID: " << Node->ID.Get() ;
             }
         }
 
@@ -344,10 +343,8 @@ void Frame(void)
             ax::NodeEditor::GetSelectedLinks(link_buffer,sel_links);
             for (int i = 0; i < sel_links; i++) {
                 Link* Link = FindLink(link_buffer[i]);
-                qDebug() << "Selected Link ID: " << Link->ID.Get() ;
             }
         }
-        qDebug() << "--------------- end of list -------------";
 
         // int sel_links = ax::NodeEditor::GetSelectedLinks(LinkId* links, int size);
         //bool IsNodeSelected(NodeId nodeId);
