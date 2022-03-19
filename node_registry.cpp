@@ -55,8 +55,8 @@ void RestoreRegistryNode(const std::string& NodeName,const std::string* Properti
     for(PinDescription p : Desc.Outputs)
         s_Session.s_Nodes.back().Outputs.emplace_back(GetNextId(), p.Label.c_str(), PinType::Flow);
 
-    // Handle propertie through deserialization
-    s_Session.s_Nodes.back().Properties.deseralize(*Properties);
+    // Handle property through deserialization
+    turnkey::api::Prop_Deserialize(s_Session.s_Nodes.back().Properties,*Properties);
 
     // Standard scrubber from examples.
     BuildNode(&s_Session.s_Nodes.back());

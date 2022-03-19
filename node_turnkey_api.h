@@ -11,6 +11,14 @@
 namespace turnkey {
 namespace api {
 
+// In order to support saving and loading these strings and numbers to a "project file"
+// and because this is so tightly coupled withe data representation, you must expose
+// a serailze and deserialize routine.
+//
+// We give you this "slow but easy to use" generic container here:
+// Note these are implemented in attribute.cpp
+std::string Prop_Serialize (const Properties& Prop_In, int& entries); // entries is the count of properties TODO: don't have entires
+void        Prop_Deserialize(Properties& Prop_In, const std::string& serialized_table);
 
 struct PinDescription {
     std::string Label;
@@ -29,20 +37,20 @@ struct NodeDescription {
     // when the graph or user needs your node to do things.
 
     // Please provide a function of type
-    // void function_name(attr_table&);
+    // void function_name(Properties&);  (where properties are defined in node_turnkey_types.h)
     // We will call it when a new node is created.
     // In your function, please add default key value pairs
     // into the attribute table.
-    void (*InitializeDefaultProperties)(attr_table&);
+    void (*InitializeDefaultProperties)(Properties&);
 
     // Please provide a function of type
-    // void function_name(attr_table&);
+    // void function_name(Properties&); (where properties are defined in node_turnkey_types.h)
     // This is your IMGUI draw callback.  Your job is to read and
     // write properties values using IMGUI widgets.
-    void (*DrawAndEditProperties)(attr_table&);
+    void (*DrawAndEditProperties)(Properties&);
 
     // (For offline-update pattern) The system would like you to "execute" your node
-    void (*Execute)(attr_table&,const std::vector<turnkey::types::Link>& Inputs, const std::vector<turnkey::types::Link>& Outputs);
+    void (*Execute)(Properties&,const std::vector<turnkey::types::Link>& Inputs, const std::vector<turnkey::types::Link>& Outputs);
 
     // (For offline-update pattern) The system wants you to kill the execution of your node.
     void (*KillExecution)(void);

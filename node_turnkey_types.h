@@ -4,10 +4,22 @@
 // Types Section ==============================================================
 #include <widgets.h>
 #include <builders.h>
-#include <attribute.h>
 #include <string>
 #include <vector>
 #include <map>
+
+// The user needs to specify a type that stores all the node instance UI data.
+// You will use this type in your node drawing routines to track strings and numbers
+// in the widgets.
+//
+// In order to support saving and loading these strings and numbers to a "project file"
+// and because this is so tightly coupled withe data representation, you must also expose
+// a serailze and deserialize routine.
+//
+// Feel free to add your own container, or a void* and recompile.
+// We give you this "slow but easy to use" generic container here:
+#include <attribute.h>
+typedef attr_table Properties;
 
 
 namespace turnkey {
@@ -63,7 +75,7 @@ struct Node
     std::string Name;
     std::vector<Pin> Inputs;
     std::vector<Pin> Outputs;
-    attr_table  Properties;
+    Properties  Properties;
     ImColor Color;
     NodeType Type;
     ImVec2 Size;

@@ -2,6 +2,19 @@
 #include <string>
 #include <sstream>
 #include <map>
+#include <node_turnkey_api.h>
+
+
+// C to Instance adaptor
+std::string turnkey::api::Prop_Serialize(const attr_table& Prop_In, int& entries)
+{
+    return Prop_In.serialize(entries);
+}
+
+void turnkey::api::Prop_Deserialize(attr_table& Prop_In, const std::string& serialized_table)
+{
+    return Prop_In.deseralize(serialized_table);
+}
 
 
 attr_value::attr_value(const attr_string& Value) {
@@ -106,7 +119,9 @@ attr_value& attr_table::get_attr(const attr_name& Key) {
     return table[Key];
 }
 
-std::string attr_table::serialize(int& entries) {
+
+std::string attr_table::serialize(int& entries) const
+{
     std::string seralization;
     attr_type attribute_type;
     int count = 0;

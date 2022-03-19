@@ -305,7 +305,8 @@ void Finalize(void)
         out << s_Session.s_Nodes[i].Name << std::endl;
         int count = 0;
         // The next line is a number describing the count of properties lines
-        std::string props = s_Session.s_Nodes[i].Properties.serialize(count);
+        std::string props = turnkey::api::Prop_Serialize(s_Session.s_Nodes[i].Properties,count);
+
         out << count << std::endl;
         // Then the next lines are the actual property lines.
         out << props;

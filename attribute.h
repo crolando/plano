@@ -109,7 +109,7 @@ public:
     attr_value& get_attr(const attr_name& Key);
 
     // serializer.  two return values
-    std::string serialize(int& entries);
+    std::string serialize(int& entries) const;
 
     // deseralizer
     void deseralize(const std::string& serialized_table);
@@ -118,6 +118,10 @@ public:
 private:
     std::map <attr_name, attr_value> table;
 };
+
+// C to Instance adaptor to comply with API needs.
+std::string Prop_Serialize(const attr_table& Prop_In, int& entries);
+void Prop_Deserialize(attr_table& Prop_In, const std::string& serialized_table);
 
 
 #endif // ATTRIBUTE_H
