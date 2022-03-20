@@ -69,7 +69,113 @@ void RegisterNewNode(api::NodeDescription NewDescription) {
 }
 
 
+void LoadNodesAndLinksFromBuffer(const size_t in_size,  void* buffer)
+{
+    // Extremely bad deserialization system
+    // PHASE ONE - READ FILE TO MEMORY --------------------------------------------
+    std::string line; // tracks current line in file read loop
+    std::ifstream inf("nodos_project.txt");
+    int id = 0; // actual node id.  Note that the node id and s_Nodes[x] index are NOT THE SAME.
+    int highest_id = 0; // Track highest ID encountered, so we can seed the s_NextId variable which is used a lot in GetNextId()
+    std::string NodeName;  // Actually node type
+    std::stringstream PropBuffer; // Accumulator for properties lines in a loop.
+    std::string Properties; // Whole, intact, Properties table after the loop.
+    int PropertiesCount; // Count of properties lines under a node section.
 
+    // Processes each node in turn.  Note there are loads
+    // of more getline statements inside this loop, so this outer loop ends up iterating on whole node boundaries.
+    while(std::getline(inf,line))
+    {
+        // Shuttle data into ID, NodeName, and Properties variables.
+        // first line is ID, which links us back to the file that has the node positions and zoom
+        id = std::stol(line);
+
+        // The entire example relies heavily on s_NextId to generate fresh IDs.
+        // After serialization, s_NextId is usually 1, which overlaps our
+        // re-serialized data.
+        highest_id = std::max(highest_id,id);
+
+        // advance to next line
+        std::getline(inf,line);
+        // node type is listed here
+        NodeName = line;
+        // advance to next line
+        std::getline(inf,line);
+        // count of properties lines are here
+        PropertiesCount = std::stol(line);
+        // read in properties line by line
+        for(int i = 0; i < PropertiesCount * 3; i++) {
+            std::getline(inf,line);
+            // note that we have to re-add the endline because getline consumes it.
+            PropBuffer << line <<std::endl;
+        }
+        // now we have all the propreties!
+        Properties = PropBuffer.str();
+
+        // PHASE TWO - INSTANTIATE NODES ------------------------------------------
+        // Use data in Nodename and Properties to instantiate nodes from the registry
+        // (new node definition system)
+        if (s_Session.NodeRegistry.count(NodeName) > 0)
+        {
+            RestoreRegistryNode(NodeName,&Properties,id);
+        } else {
+            // This mess is only here to support the old examples. We can remove this
+            // when the old examples are ported to the new node_defs system.
+            //
+            // Call the appropriate example node spawner.  You must do this
+            // because the spawners have the pin layout information, and pin instantiation
+            // must be done to keep the ID alignment.
+                     if (NodeName == "InputAction Fire") {SpawnInputActionNode();}
+                else if (NodeName == "Branch")           {SpawnBranchNode();}
+                else if (NodeName == "Do N")             {SpawnDoNNode();}
+                else if (NodeName == "OutputAction")     {SpawnOutputActionNode();}
+                else if (NodeName == "Print String")     {SpawnPrintStringNode();}
+                else if (NodeName == "")                 {SpawnMessageNode();}
+                else if (NodeName == "Set Timer")        {SpawnSetTimerNode();}
+                else if (NodeName == "<")                {SpawnLessNode();}
+                else if (NodeName == "o.O")              {SpawnWeirdNode();}
+                else if (NodeName == "Single Line Trace by Channel") {SpawnTraceByChannelNode();}
+                else if (NodeName == "Sequence")         {SpawnTreeSequenceNode();}
+                else if (NodeName == "Move To")          {SpawnTreeTaskNode();}
+                else if (NodeName == "Random Wait")      {SpawnTreeTask2Node();}
+                else if (NodeName == "Test Comment")     {SpawnComment();}
+                else if (NodeName == "Transform")        {SpawnHoudiniTransformNode();}
+                else if (NodeName == "Group")            {SpawnHoudiniGroupNode();}
+                else {  throw std::invalid_argument("Deserializer encountered a unrecognized legacy node name: " + NodeName);}
+                turnkey::api::Prop_Deserialize(s_Session.s_Nodes.back().Properties,Properties);
+        } // Done with node instantiation.
+    } // Done with a node processing section.  Loop back if there's another node (more lines in getline)
+    // Make pins and node reference reflective.
+    BuildNodes();
+}
+
+// reassigns "buffer". caller owns "buffer" for purposes of memory freeing. api only creates the heap data.
+size_t SaveNodesAndLinksToBuffer(void* buffer)
+{
+    // Extremely bad serilzation system
+    std::ofstream out("nodos_project.txt");
+
+    // For every node in s_Nodes...
+    for (unsigned long long i = 0; i < s_Session.s_Nodes.size(); i++)
+    {
+        // First line is ID
+        out << s_Session.s_Nodes[i].ID.Get() << std::endl;
+        // Next line is Name (node type)
+        out << s_Session.s_Nodes[i].Name << std::endl;
+
+        // The next line is a number describing the count of properties lines.
+        // so first we get the property lines.
+        std::string props = turnkey::api::Prop_Serialize(s_Session.s_Nodes[i].Properties);
+        // then compute the number of properties based on lines / 3
+        int n = std::count(props.begin(), props.end(), '\n');
+        int count = n / 3;
+        out << count << std::endl;
+        // Then the next lines are the actual property lines.
+        out << props;
+    }
+
+    return 0;
+}
 
 
 
@@ -109,13 +215,6 @@ void RegisterNewNode(api::NodeDescription NewDescription) {
 //        ImGui::GetItemRectMax() + ImVec2(expand, expand),
 //        color, rounding);
 //};
-
-// NODOS DEV ==================================================================
-// Test to enforce acyclicism
-// This is probably the first recursive function I've wrote.  That shouldn't be
-// a true statement.
-// ============================================================================
-
 
 
 void Initialize(void)
@@ -205,83 +304,6 @@ void Initialize(void)
     s_Session.s_SaveIcon         = s_Session.textures.LoadTexture("Data/ic_save_white_24dp.png");
     s_Session.s_RestoreIcon      = s_Session.textures.LoadTexture("Data/ic_restore_white_24dp.png");
 
-
-    // Extremely bad deserialization system
-    // PHASE ONE - READ FILE TO MEMORY --------------------------------------------
-    std::string line; // tracks current line in file read loop
-    std::ifstream inf("nodos_project.txt");
-    int id = 0; // actual node id.  Note that the node id and s_Nodes[x] index are NOT THE SAME.
-    int highest_id = 0; // Track highest ID encountered, so we can seed the s_NextId variable which is used a lot in GetNextId()
-    std::string NodeName;  // Actually node type
-    std::stringstream PropBuffer; // Accumulator for properties lines in a loop.
-    std::string Properties; // Whole, intact, Properties table after the loop.
-    int PropertiesCount; // Count of properties lines under a node section.
-
-    // Processes each node in turn.  Note there are loads
-    // of more getline statements inside this loop, so this outer loop ends up iterating on whole node boundaries.
-    while(std::getline(inf,line))
-    {
-        // Shuttle data into ID, NodeName, and Properties variables.
-        // first line is ID, which links us back to the file that has the node positions and zoom
-        id = std::stol(line);
-
-        // The entire example relies heavily on s_NextId to generate fresh IDs.
-        // After serialization, s_NextId is usually 1, which overlaps our
-        // re-serialized data.
-        highest_id = std::max(highest_id,id);
-
-        // advance to next line
-        std::getline(inf,line);
-        // node type is listed here
-        NodeName = line;
-        // advance to next line
-        std::getline(inf,line);
-        // count of properties lines are here
-        PropertiesCount = std::stol(line);
-        // read in properties line by line
-        for(int i = 0; i < PropertiesCount; i++) {
-            std::getline(inf,line);
-            // note that we have to re-add the endline because getline consumes it.
-            PropBuffer << line <<std::endl;
-        }
-        // now we have all the propreties!
-        Properties = PropBuffer.str();
-
-        // PHASE TWO - INSTANTIATE NODES ------------------------------------------
-        // Use data in Nodename and Properties to instantiate nodes from the registry
-        // (new node definition system)
-        if (s_Session.NodeRegistry.count(NodeName) > 0)
-        {
-            RestoreRegistryNode(NodeName,&Properties,id);
-        } else {
-            // This mess is only here to support the old examples. We can remove this
-            // when the old examples are ported to the new node_defs system.
-            //
-            // Call the appropriate example node spawner.  You must do this
-            // because the spawners have the pin layout information, and pin instantiation
-            // must be done to keep the ID alignment.
-                     if (NodeName == "InputAction Fire") {SpawnInputActionNode();}
-                else if (NodeName == "Branch")           {SpawnBranchNode();}
-                else if (NodeName == "Do N")             {SpawnDoNNode();}
-                else if (NodeName == "OutputAction")     {SpawnOutputActionNode();}
-                else if (NodeName == "Print String")     {SpawnPrintStringNode();}
-                else if (NodeName == "")                 {SpawnMessageNode();}
-                else if (NodeName == "Set Timer")        {SpawnSetTimerNode();}
-                else if (NodeName == "<")                {SpawnLessNode();}
-                else if (NodeName == "o.O")              {SpawnWeirdNode();}
-                else if (NodeName == "Single Line Trace by Channel") {SpawnTraceByChannelNode();}
-                else if (NodeName == "Sequence")         {SpawnTreeSequenceNode();}
-                else if (NodeName == "Move To")          {SpawnTreeTaskNode();}
-                else if (NodeName == "Random Wait")      {SpawnTreeTask2Node();}
-                else if (NodeName == "Test Comment")     {SpawnComment();}
-                else if (NodeName == "Transform")        {SpawnHoudiniTransformNode();}
-                else if (NodeName == "Group")            {SpawnHoudiniGroupNode();}
-                else {  throw std::invalid_argument("Deserializer encountered a unrecognized legacy node name: " + NodeName);}
-                s_Session.s_Nodes.back().Properties.deseralize(Properties);
-        } // Done with node instantiation.
-    } // Done with a node processing section.  Loop back if there's another node (more lines in getline)
-    // Make pins and node reference reflective.
-    BuildNodes();
     //auto& io = ImGui::GetIO();
 }
 
@@ -293,24 +315,6 @@ void Finalize(void)
     s_Session.s_RestoreIcon = nullptr;
     s_Session.s_SaveIcon = nullptr;
     s_Session.s_HeaderBackground = nullptr;
-
-    // Extremely bad serilzation system    
-    std::ofstream out("nodos_project.txt");
-    // For every node in s_Nodes...
-    for (unsigned long long i = 0; i < s_Session.s_Nodes.size(); i++)
-    {
-        // First line is ID
-        out << s_Session.s_Nodes[i].ID.Get() << std::endl;
-        // Next line is Name (node type)
-        out << s_Session.s_Nodes[i].Name << std::endl;
-        int count = 0;
-        // The next line is a number describing the count of properties lines
-        std::string props = turnkey::api::Prop_Serialize(s_Session.s_Nodes[i].Properties,count);
-
-        out << count << std::endl;
-        // Then the next lines are the actual property lines.
-        out << props;
-    }
 
     if (s_Session.m_Editor)
     {

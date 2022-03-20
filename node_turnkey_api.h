@@ -17,8 +17,16 @@ namespace api {
 //
 // We give you this "slow but easy to use" generic container here:
 // Note these are implemented in attribute.cpp
-std::string Prop_Serialize (const Properties& Prop_In, int& entries); // entries is the count of properties TODO: don't have entires
+std::string Prop_Serialize (const Properties& Prop_In);
 void        Prop_Deserialize(Properties& Prop_In, const std::string& serialized_table);
+
+// All the other serizliation stuff, like node positions, what node types are in the graph,
+// where the links are connected to, etc etc etc are handled automatically.  These calls
+// end up calling the above ones.  These are your master load/save IO for turnkey.
+// write this shit to a file, and then load it and then back you are.
+void LoadNodesAndLinksFromBuffer(const size_t in_size,  void* buffer);
+size_t SaveNodesAndLinksToBuffer(void* buffer); // reassigns "buffer". caller owns "buffer" for purposes of memory freeing. api only creates the heap data.
+
 
 struct PinDescription {
     std::string Label;
@@ -68,9 +76,15 @@ void RegisterNewNode(NodeDescription NewDescription); // register your NodeDescr
 
 // Overall System Start / Frame / Stop calls
 // TODO: Init/Finailze should amost certainly be ported to the above context systems.
-void Initialize(void); // Creates sets up and configures imgui_node_editor backend, deserializes project file.
+void Initialize(void); // Creates sets up and configures imgui_node_editor backend
 void Frame(void);      // Draws nodes and handles interactions.
 void Finalize(void);   // Cleanup.
+
+
+
+
+
+
 
 // // Destroy Node (Node*)
 // NodePrototypeID = RegisterNode (NodePrototype prototype)
@@ -78,11 +92,6 @@ void Finalize(void);   // Cleanup.
 
 // LinkInstanceID[] = GetLinkInstances()
 // NodeInstanceID[] = GetNodeInstances()
-
-
-// ~ Serialization ~
-// LoadNodesAndLinksFromBuffer(void*)
-// SaveNodesAndLinksToBuffer(out_size, void* buffer);
 
 
 

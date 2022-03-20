@@ -108,8 +108,8 @@ public:
     // Getter.  See attr_value documentation for safe use of return value;
     attr_value& get_attr(const attr_name& Key);
 
-    // serializer.  two return values
-    std::string serialize(int& entries) const;
+    // serializer.
+    std::string serialize() const;
 
     // deseralizer
     void deseralize(const std::string& serialized_table);

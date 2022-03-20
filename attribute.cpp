@@ -6,9 +6,9 @@
 
 
 // C to Instance adaptor
-std::string turnkey::api::Prop_Serialize(const attr_table& Prop_In, int& entries)
+std::string turnkey::api::Prop_Serialize(const attr_table& Prop_In)
 {
-    return Prop_In.serialize(entries);
+    return Prop_In.serialize();
 }
 
 void turnkey::api::Prop_Deserialize(attr_table& Prop_In, const std::string& serialized_table)
@@ -120,7 +120,7 @@ attr_value& attr_table::get_attr(const attr_name& Key) {
 }
 
 
-std::string attr_table::serialize(int& entries) const
+std::string attr_table::serialize() const
 {
     std::string seralization;
     attr_type attribute_type;
@@ -143,7 +143,6 @@ std::string attr_table::serialize(int& entries) const
         }
         count +=3;
     }
-    entries = count;
     return seralization;
 }
 
