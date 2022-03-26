@@ -87,7 +87,7 @@ void LoadNodesAndLinksFromBuffer(const size_t in_size, const char* buffer)
     inf << std::string(buffer,in_size);
 
     int id = 0; // actual node id.  Note that the node id and s_Nodes[x] index are NOT THE SAME.
-    int highest_id = 0; // Track highest ID encountered, so we can seed the s_NextId variable which is used a lot in GetNextId()
+
     std::string NodeName;  // Actually node type
     std::stringstream PropBuffer; // Accumulator for properties lines in a loop.
     std::string Properties; // Whole, intact, Properties table after the loop.
@@ -108,11 +108,7 @@ void LoadNodesAndLinksFromBuffer(const size_t in_size, const char* buffer)
         // first line in the "node sub group" is ID
         std::getline(inf,line);
         id = std::stol(line);
-
-        // The entire example relies heavily on s_NextId to generate fresh IDs.
-        // After serialization, s_NextId is usually 1, which overlaps our
-        // re-serialized data.
-        highest_id = std::max(highest_id,id);
+        LogRestoredId(id); // Let the system know this ID is in use, so it doesn't try to use it for new items.
 
         // Next line is the node type.
         std::getline(inf,line);        
@@ -129,7 +125,7 @@ void LoadNodesAndLinksFromBuffer(const size_t in_size, const char* buffer)
             {
                 std::getline(inf,line);
                 int pin_id = std::stol(line);
-                highest_id = std::max(highest_id,pin_id);
+                LogRestoredId(pin_id); // Let the system know this ID is in use, so it doesn't try to use it for new items.
                 pin_ids.push_back(pin_id);
             }
         }
@@ -194,6 +190,7 @@ void LoadNodesAndLinksFromBuffer(const size_t in_size, const char* buffer)
         // first is our id
         std::getline(inf,line);
         int link_id = std::stol(line);
+        LogRestoredId(link_id); // Let the system know this ID is in use, so it doesn't try to use it for new items.
 
         // next is start pin id
         std::getline(inf,line);
@@ -203,15 +200,14 @@ void LoadNodesAndLinksFromBuffer(const size_t in_size, const char* buffer)
         std::getline(inf,line);
         int end_pin_id = std::stol(line);
 
+
         // construct a link
         turnkey::types::Link l = turnkey::types::Link(link_id,start_pin_id,end_pin_id);
+
 
         // attach it to session
         s_Session.s_Links.push_back(std::move(l));
     }
-
-
-
 }
 
 #include <sstream>

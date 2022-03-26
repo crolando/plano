@@ -38,6 +38,7 @@ extern types::SessionData s_Session;      // ultimate, global, current session. 
 // internal tools all operate on current session -------------------------------------
 int          GetNextId();            // Get an unclaimed ID for runtime ID tracking
 void         SetNextId(int Id);      // Deserializer will need to bump up the ID after it fills the SessionData with used IDs.
+void         LogRestoredId(int Id);  // Probably a better way to do above, sets next id to 1 + max(id,input).
 
 types::Node* FindNode(ax::NodeEditor::NodeId id);    // Convert a NodeId to a Node*
 types::Link* FindLink(ax::NodeEditor::LinkId id);    // Convert a LinkId to a Link*

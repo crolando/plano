@@ -46,10 +46,6 @@ void RestoreRegistryNode(const std::string& NodeName, const std::string* Propert
     // Create node object and pass the type name.
     s_Session.s_Nodes.emplace_back(id, Desc.Type.c_str());
 
-    // Because we didn't call GetNextID, we must manually put the ID counter where it
-    // would be, had we done so.
-    SetNextId(id + 1);
-
     // Handle creating the pins
     int pin_id_idx = 0;
     for(PinDescription p : Desc.Inputs)

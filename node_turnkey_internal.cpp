@@ -17,6 +17,10 @@ void SetNextId(int Id) {
     s_Session.s_NextId = Id;
 }
 
+void LogRestoredId(int Id) {
+    s_Session.s_NextId = std::max(Id,s_Session.s_NextId);
+}
+
 void BuildNode(types::Node* node)
 {
     for (auto& input : node->Inputs)
