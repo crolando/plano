@@ -116,6 +116,22 @@ void LoadNodesAndLinksFromBuffer(const size_t in_size, const char* buffer)
         std::getline(inf,line);        
         NodeName = line;
 
+        // next line is the count of pins
+        std::getline(inf,line);
+        int pin_count = std::stol(line);
+
+        // Read in pin ids to a vector
+        std::vector<int> pin_ids;
+        if(pin_count > 0) {
+            for(int pin_idx = 0; pin_idx < pin_count; pin_idx++)
+            {
+                std::getline(inf,line);
+                int pin_id = std::stol(line);
+                highest_id = std::max(highest_id,pin_id);
+                pin_ids.push_back(pin_id);
+            }
+        }
+
         // Next is the count of properties.
         std::getline(inf,line);
         PropertiesCount = std::stol(line);
@@ -134,7 +150,7 @@ void LoadNodesAndLinksFromBuffer(const size_t in_size, const char* buffer)
         // (new node definition system)
         if (s_Session.NodeRegistry.count(NodeName) > 0)
         {
-            RestoreRegistryNode(NodeName,&Properties,id);
+            RestoreRegistryNode(NodeName,&Properties,id,pin_ids);
         } else {
             // This mess is only here to support the old examples. We can remove this
             // when the old examples are ported to the new node_defs system.
@@ -214,8 +230,28 @@ char* SaveNodesAndLinksToBuffer(size_t* size)
         // First line is ID
         out << s_Session.s_Nodes[i].ID.Get() << std::endl;
 
-        // Next line is Name (node type)
+        // Next line is node type
         out << s_Session.s_Nodes[i].Name << std::endl;
+
+        // the "count of pins" is next
+        int output_pin_count = s_Session.s_Nodes[i].Outputs.size();
+        int input_pin_count = s_Session.s_Nodes[i].Inputs.size();
+        int pin_count = output_pin_count + input_pin_count;
+        out << pin_count << std::endl;
+
+        // dump by the input pin ids
+        for (int input_idx = 0; input_idx < input_pin_count; input_idx++ )
+        {
+            out << s_Session.s_Nodes[i].Inputs[input_idx].ID.Get() << std::endl;
+        }
+
+        // then dump out the output pin ids
+        for (int output_idx = 0; output_idx < output_pin_count; output_idx++ )
+        {
+            out << s_Session.s_Nodes[i].Outputs[output_idx].ID.Get() << std::endl;
+        }
+
+
 
         // The next line is a number describing the count of properties lines.
         // so first we get the property lines.

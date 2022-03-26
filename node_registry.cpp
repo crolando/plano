@@ -35,7 +35,8 @@ Node* NewRegistryNode(const std::string& NodeName) {
 
 // This restores a node using the node definitions loaded into the registry.
 // The properties of the node are copied in via deserialization of the project file.
-void RestoreRegistryNode(const std::string& NodeName,const std::string* Properties, int id)
+#include <vector>
+void RestoreRegistryNode(const std::string& NodeName, const std::string* Properties, int id, const std::vector<int>& pin_ids)
 {
     // Standard node spawner behavior, only we construct the objects
     // using the registry data.
@@ -50,10 +51,11 @@ void RestoreRegistryNode(const std::string& NodeName,const std::string* Properti
     SetNextId(id + 1);
 
     // Handle creating the pins
+    int pin_id_idx = 0;
     for(PinDescription p : Desc.Inputs)
-        s_Session.s_Nodes.back().Inputs.emplace_back(GetNextId(), p.Label.c_str(), PinType::Flow);
+        s_Session.s_Nodes.back().Inputs.emplace_back(pin_ids[pin_id_idx++], p.Label.c_str(), PinType::Flow);
     for(PinDescription p : Desc.Outputs)
-        s_Session.s_Nodes.back().Outputs.emplace_back(GetNextId(), p.Label.c_str(), PinType::Flow);
+        s_Session.s_Nodes.back().Outputs.emplace_back(pin_ids[pin_id_idx++], p.Label.c_str(), PinType::Flow);
 
     // Handle property through deserialization
     turnkey::api::Prop_Deserialize(s_Session.s_Nodes.back().Properties,*Properties);
