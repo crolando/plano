@@ -72,6 +72,9 @@ void RegisterNewNode(api::NodeDescription NewDescription) {
 #include <sstream>
 void LoadNodesAndLinksFromBuffer(const size_t in_size, const char* buffer)
 {
+    // do nothing if there is no data
+    if(in_size < 1)
+        return;
 
 
     // Extremely bad deserialization system
