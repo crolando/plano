@@ -149,11 +149,13 @@ void LoadNodesAndLinksFromBuffer(const size_t in_size,  void* buffer)
     BuildNodes();
 }
 
+#include <sstream>
 // reassigns "buffer". caller owns "buffer" for purposes of memory freeing. api only creates the heap data.
-size_t SaveNodesAndLinksToBuffer(void* buffer)
+size_t SaveNodesAndLinksToBuffer(char** buffer_address)
 {
     // Extremely bad serilzation system
-    std::ofstream out("nodos_project.txt");
+    // std::ofstream out("nodos_project.txt");
+    std::ostringstream out;
 
     // For every node in s_Nodes...
     for (unsigned long long i = 0; i < s_Session.s_Nodes.size(); i++)
@@ -174,7 +176,11 @@ size_t SaveNodesAndLinksToBuffer(void* buffer)
         out << props;
     }
 
-    return 0;
+    size_t size = out.str().size();
+    char* out_buf = new char[size];
+    memcpy(out_buf,out.str().c_str(),size);
+    *buffer_address = out_buf;
+    return size;
 }
 
 

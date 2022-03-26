@@ -11,6 +11,8 @@
 namespace turnkey {
 namespace api {
 
+// Serialize & Deserialze Properties Callbacks =========================================
+//
 // In order to support saving and loading these strings and numbers to a "project file"
 // and because this is so tightly coupled withe data representation, you must expose
 // a serailze and deserialize routine.
@@ -20,13 +22,17 @@ namespace api {
 std::string Prop_Serialize (const Properties& Prop_In);
 void        Prop_Deserialize(Properties& Prop_In, const std::string& serialized_table);
 
+// Serialze & Deserialize EVERYTHING Functions =========================================
+//
+// handles: node types, positions, pin connections, properties, the whole shebang.
+//
 // All the other serizliation stuff, like node positions, what node types are in the graph,
 // where the links are connected to, etc etc etc are handled automatically.  These calls
 // end up calling the above ones.  These are your master load/save IO for turnkey.
 // write this shit to a file, and then load it and then back you are.
 void LoadNodesAndLinksFromBuffer(const size_t in_size,  void* buffer);
-size_t SaveNodesAndLinksToBuffer(void* buffer); // reassigns "buffer". caller owns "buffer" for purposes of memory freeing. api only creates the heap data.
-
+size_t SaveNodesAndLinksToBuffer(char **buffer_address); // reassigns "buffer_address". caller owns "buffer" for purposes of memory freeing. api only creates the heap data.
+                                                         // use delete to free this memory.
 
 struct PinDescription {
     std::string Label;
