@@ -58,6 +58,16 @@ char* SaveNodesAndLinksToBuffer(size_t* size);
 struct PinDescription {
     std::string Label;
     std::string DataType;
+
+    // Basic init constuctor
+    PinDescription():
+        Label(""),
+        DataType(""){};
+
+    // Concise constructor
+    PinDescription(std::string Label,std::string DataType):
+        Label(Label),
+        DataType(DataType){};
 };
 
 // Please fill out this form and then register it.
@@ -106,11 +116,6 @@ void RegisterNewNode(NodeDescription NewDescription); // register your NodeDescr
 void Initialize(void); // Creates sets up and configures imgui_node_editor backend
 void Frame(void);      // Draws nodes and handles interactions.
 void Finalize(void);   // Cleanup.
-
-
-
-
-
 
 
 // // Destroy Node (Node*)
