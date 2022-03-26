@@ -65,6 +65,8 @@ void SetContext(SessionData* context)
 }
 
 void RegisterNewNode(api::NodeDescription NewDescription) {
+    // you can't register 2 nodes with the same name.
+    assert(s_Session.NodeRegistry.count(NewDescription.Type) < 0);
     s_Session.NodeRegistry[NewDescription.Type] = NewDescription;
 }
 
