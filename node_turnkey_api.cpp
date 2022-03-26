@@ -72,6 +72,8 @@ void RegisterNewNode(api::NodeDescription NewDescription) {
 #include <sstream>
 void LoadNodesAndLinksFromBuffer(const size_t in_size, const char* buffer)
 {
+
+
     // Extremely bad deserialization system
     // PHASE ONE - READ FILE TO MEMORY --------------------------------------------
     std::string line; // tracks current line in file read loop
@@ -86,12 +88,20 @@ void LoadNodesAndLinksFromBuffer(const size_t in_size, const char* buffer)
     std::string Properties; // Whole, intact, Properties table after the loop.
     int PropertiesCount; // Count of properties lines under a node section.
 
+    // First overall line is node count.
+    std::getline(inf,line);
+
+    int node_count = std::stol(line);
+
     // Processes each node in turn.  Note there are loads
     // of more getline statements inside this loop, so this outer loop ends up iterating on whole node boundaries.
-    while(std::getline(inf,line))
+    //while(std::getline(inf,line))
+    for (int i = 0; i < node_count; i++)
     {
         // Shuttle data into ID, NodeName, and Properties variables.
-        // first line is ID, which links us back to the file that has the node positions and zoom
+
+        // first line in the "node sub group" is ID
+        std::getline(inf,line);
         id = std::stol(line);
 
         // The entire example relies heavily on s_NextId to generate fresh IDs.
@@ -99,15 +109,15 @@ void LoadNodesAndLinksFromBuffer(const size_t in_size, const char* buffer)
         // re-serialized data.
         highest_id = std::max(highest_id,id);
 
-        // advance to next line
-        std::getline(inf,line);
-        // node type is listed here
+        // Next line is the node type.
+        std::getline(inf,line);        
         NodeName = line;
-        // advance to next line
+
+        // Next is the count of properties.
         std::getline(inf,line);
-        // count of properties lines are here
         PropertiesCount = std::stol(line);
-        // read in properties line by line
+
+        // Iterate over propreties
         for(int i = 0; i < PropertiesCount * 3; i++) {
             std::getline(inf,line);
             // note that we have to re-add the endline because getline consumes it.
@@ -149,8 +159,38 @@ void LoadNodesAndLinksFromBuffer(const size_t in_size, const char* buffer)
                 turnkey::api::Prop_Deserialize(s_Session.s_Nodes.back().Properties,Properties);
         } // Done with node instantiation.
     } // Done with a node processing section.  Loop back if there's another node (more lines in getline)
+
     // Make pins and node reference reflective.
     BuildNodes();
+
+    // lets read the link count now.
+    std::getline(inf,line);
+    int link_count = std::stol(line);
+
+    // Iterate over N links
+    for (int i = 0; i < link_count; i++)
+    {
+        // first is our id
+        std::getline(inf,line);
+        int link_id = std::stol(line);
+
+        // next is start pin id
+        std::getline(inf,line);
+        int start_pin_id = std::stol(line);
+
+        // last is end pin id
+        std::getline(inf,line);
+        int end_pin_id = std::stol(line);
+
+        // construct a link
+        turnkey::types::Link l = turnkey::types::Link(link_id,start_pin_id,end_pin_id);
+
+        // attach it to session
+        s_Session.s_Links.push_back(std::move(l));
+    }
+
+
+
 }
 
 #include <sstream>
@@ -162,11 +202,15 @@ char* SaveNodesAndLinksToBuffer(size_t* size)
     // std::ofstream out("nodos_project.txt");
     std::ostringstream out;
 
+    // write node count first
+    out << s_Session.s_Nodes.size() << std::endl;
+
     // For every node in s_Nodes...
     for (unsigned long long i = 0; i < s_Session.s_Nodes.size(); i++)
     {
         // First line is ID
         out << s_Session.s_Nodes[i].ID.Get() << std::endl;
+
         // Next line is Name (node type)
         out << s_Session.s_Nodes[i].Name << std::endl;
 
@@ -179,6 +223,21 @@ char* SaveNodesAndLinksToBuffer(size_t* size)
         out << count << std::endl;
         // Then the next lines are the actual property lines.
         out << props;
+    }
+
+    // next write link count
+    out << s_Session.s_Links.size() << std::endl;
+
+    // For every link in s_Links...
+    for (unsigned long long i = 0; i < s_Session.s_Links.size(); i++)
+    {
+        // First line is ID
+        out << s_Session.s_Links[i].ID.Get() << std::endl;
+
+        // next is start pin id
+        out << s_Session.s_Links[i].StartPinID.Get() << std::endl;
+        // next is end pin id
+        out << s_Session.s_Links[i].EndPinID.Get() << std::endl;
     }
 
     *size = out.str().size();
