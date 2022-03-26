@@ -150,8 +150,9 @@ void LoadNodesAndLinksFromBuffer(const size_t in_size,  void* buffer)
 }
 
 #include <sstream>
-// reassigns "buffer". caller owns "buffer" for purposes of memory freeing. api only creates the heap data.
-size_t SaveNodesAndLinksToBuffer(char** buffer_address)
+
+// Caller owns return value for purposes of memory freeing.  Use delete on the return when you're done. Thank you!
+char* SaveNodesAndLinksToBuffer(size_t* size)
 {
     // Extremely bad serilzation system
     // std::ofstream out("nodos_project.txt");
@@ -176,11 +177,10 @@ size_t SaveNodesAndLinksToBuffer(char** buffer_address)
         out << props;
     }
 
-    size_t size = out.str().size();
-    char* out_buf = new char[size];
-    memcpy(out_buf,out.str().c_str(),size);
-    *buffer_address = out_buf;
-    return size;
+    *size = out.str().size();
+    char* out_buf = new char[*size];
+    memcpy(out_buf,out.str().c_str(),*size);
+    return out_buf;
 }
 
 

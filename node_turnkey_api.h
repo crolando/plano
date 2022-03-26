@@ -31,8 +31,24 @@ void        Prop_Deserialize(Properties& Prop_In, const std::string& serialized_
 // end up calling the above ones.  These are your master load/save IO for turnkey.
 // write this shit to a file, and then load it and then back you are.
 void LoadNodesAndLinksFromBuffer(const size_t in_size,  void* buffer);
-size_t SaveNodesAndLinksToBuffer(char **buffer_address); // reassigns "buffer_address". caller owns "buffer" for purposes of memory freeing. api only creates the heap data.
-                                                         // use delete to free this memory.
+
+// SaveNodesAndLinksToBuffer()
+// Move all the graph's data to a buffer.  Put this data into your "project" files!
+//
+// This returns a heap address that YOU are responsible for clearing.
+// You MUST use "delete"; you cannot use "free".
+//
+// This function is an example of a "multiple return value" pattern. It writes to
+// the arguement, and includes a return value.  Below is an example.
+//
+// useage example:
+//    size_t size;
+//    char* cbuffer  = turnkey::api::SaveNodesAndLinksToBuffer(&size);
+//    // Save "size" count characters from "cbuffer" to a file.
+//    delete cbuffer;
+//
+char* SaveNodesAndLinksToBuffer(size_t* size);
+
 
 struct PinDescription {
     std::string Label;
