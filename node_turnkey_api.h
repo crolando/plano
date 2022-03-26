@@ -30,7 +30,12 @@ void        Prop_Deserialize(Properties& Prop_In, const std::string& serialized_
 // where the links are connected to, etc etc etc are handled automatically.  These calls
 // end up calling the above ones.  These are your master load/save IO for turnkey.
 // write this shit to a file, and then load it and then back you are.
-void LoadNodesAndLinksFromBuffer(const size_t in_size,  void* buffer);
+
+
+
+
+
+void LoadNodesAndLinksFromBuffer(const size_t in_size,  const char *buffer);
 
 // SaveNodesAndLinksToBuffer()
 // Move all the graph's data to a buffer.  Put this data into your "project" files!

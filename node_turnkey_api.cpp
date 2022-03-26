@@ -69,12 +69,16 @@ void RegisterNewNode(api::NodeDescription NewDescription) {
 }
 
 
-void LoadNodesAndLinksFromBuffer(const size_t in_size,  void* buffer)
+#include <sstream>
+void LoadNodesAndLinksFromBuffer(const size_t in_size, const char* buffer)
 {
     // Extremely bad deserialization system
     // PHASE ONE - READ FILE TO MEMORY --------------------------------------------
     std::string line; // tracks current line in file read loop
-    std::ifstream inf("nodos_project.txt");
+
+    std::stringstream inf;
+    inf << std::string(buffer,in_size);
+
     int id = 0; // actual node id.  Note that the node id and s_Nodes[x] index are NOT THE SAME.
     int highest_id = 0; // Track highest ID encountered, so we can seed the s_NextId variable which is used a lot in GetNextId()
     std::string NodeName;  // Actually node type
