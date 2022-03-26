@@ -4,7 +4,6 @@
 #include "utilities/widgets.h"
 
 #include <imgui_node_editor.h>
-#include <example_node_spawner.h>
 
 
 
@@ -149,31 +148,7 @@ void LoadNodesAndLinksFromBuffer(const size_t in_size, const char* buffer)
         if (s_Session.NodeRegistry.count(NodeName) > 0)
         {
             RestoreRegistryNode(NodeName,&Properties,id,pin_ids);
-        } else {
-            // This mess is only here to support the old examples. We can remove this
-            // when the old examples are ported to the new node_defs system.
-            //
-            // Call the appropriate example node spawner.  You must do this
-            // because the spawners have the pin layout information, and pin instantiation
-            // must be done to keep the ID alignment.
-                     if (NodeName == "InputAction Fire") {SpawnInputActionNode();}
-                else if (NodeName == "Branch")           {SpawnBranchNode();}
-                else if (NodeName == "Do N")             {SpawnDoNNode();}
-                else if (NodeName == "OutputAction")     {SpawnOutputActionNode();}
-                else if (NodeName == "Print String")     {SpawnPrintStringNode();}
-                else if (NodeName == "")                 {SpawnMessageNode();}
-                else if (NodeName == "Set Timer")        {SpawnSetTimerNode();}
-                else if (NodeName == "<")                {SpawnLessNode();}
-                else if (NodeName == "o.O")              {SpawnWeirdNode();}
-                else if (NodeName == "Single Line Trace by Channel") {SpawnTraceByChannelNode();}
-                else if (NodeName == "Sequence")         {SpawnTreeSequenceNode();}
-                else if (NodeName == "Move To")          {SpawnTreeTaskNode();}
-                else if (NodeName == "Random Wait")      {SpawnTreeTask2Node();}
-                else if (NodeName == "Test Comment")     {SpawnComment();}
-                else if (NodeName == "Transform")        {SpawnHoudiniTransformNode();}
-                else if (NodeName == "Group")            {SpawnHoudiniGroupNode();}
-                else {  throw std::invalid_argument("Deserializer encountered a unrecognized legacy node name: " + NodeName);}
-                turnkey::api::Prop_Deserialize(s_Session.s_Nodes.back().Properties,Properties);
+
         } // Done with node instantiation.
     } // Done with a node processing section.  Loop back if there's another node (more lines in getline)
 
