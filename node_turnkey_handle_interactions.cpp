@@ -151,6 +151,7 @@ void handle_delete_interactions()
 {
     if (ed::BeginDelete())
     {
+        // This deletes links.  This is very simple because nothing refers to links.
         ed::LinkId linkId = 0;
         while (ed::QueryDeletedLink(&linkId))
         {
@@ -162,16 +163,59 @@ void handle_delete_interactions()
             }
         }
 
+        // This deletes nodes.  This is horrible because links refer to nodes's pins.
+        // so we have to clean up a case where links refer to pins that were destroyed during node destruction.
+        // This incurs an expensive search.
         ed::NodeId nodeId = 0;
         while (ed::QueryDeletedNode(&nodeId))
         {
             if (ed::AcceptDeletedItem())
             {
                 auto id = std::find_if(s_Session.s_Nodes.begin(), s_Session.s_Nodes.end(), [nodeId](auto& node) { return node.ID == nodeId; });
+
                 if (id != s_Session.s_Nodes.end())
+                {
+                    // Node deletion routine.
+                    // First, we have to record a node's pin IDs before destroying the node and its pins.
+                    auto node = *id;
+                    std::vector<uint> pin_ids;
+                    for(auto inp: node.Inputs)
+                        pin_ids.push_back(inp.ID.Get());
+                    for(auto outp: node.Outputs)
+                        pin_ids.push_back(outp.ID.Get());
+
+                    // Now that we know what pin IDs the node had, we can actually destroy it now.
                     s_Session.s_Nodes.erase(id);
-            }
-        }
-    }
+
+
+                    // We have to destroy link objects that were connected to this dead node.
+                    // you do this by asking all the links if they're connected to the dead pin ids.
+                    auto it = s_Session.s_Links.begin();
+                    while(it != s_Session.s_Links.end())
+                    {
+                        bool del = false;
+                        for(auto pid: pin_ids)
+                        {
+                            auto endpin = it->EndPinID.Get();
+                            auto startpin = it->StartPinID.Get();
+                            // it is on the shit list
+                            if(pid == endpin || pid == startpin)
+                            {
+                                del = true;
+
+                            }
+                        }
+                        // are you connected to at least one dieing pin?
+                        if(del)
+                        {
+                            it = s_Session.s_Links.erase(it);
+                        } else {
+                        it++;
+                        }
+                    }
+                }  // End test if the node search was sucessful
+            } // End of Accept Delete Item block
+        } // End of QueryDeletedNode loop
+    } // End BeginDelete test
     ed::EndDelete();
 }
