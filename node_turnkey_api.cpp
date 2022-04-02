@@ -87,8 +87,7 @@ void LoadNodesAndLinksFromBuffer(const size_t in_size, const char* buffer)
 
     int id = 0; // actual node id.  Note that the node id and s_Nodes[x] index are NOT THE SAME.
 
-    std::string NodeName;  // Actually node type
-    std::stringstream PropBuffer; // Accumulator for properties lines in a loop.
+    std::string NodeName;  // Actually node type    
     std::string Properties; // Whole, intact, Properties table after the loop.
     int PropertiesCount; // Count of properties lines under a node section.
 
@@ -102,6 +101,8 @@ void LoadNodesAndLinksFromBuffer(const size_t in_size, const char* buffer)
     //while(std::getline(inf,line))
     for (int i = 0; i < node_count; i++)
     {
+        std::stringstream PropBuffer; // Accumulator for properties lines in a loop.
+
         // Shuttle data into ID, NodeName, and Properties variables.
 
         // first line in the "node sub group" is ID
