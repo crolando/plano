@@ -18,7 +18,9 @@ void SetNextId(int Id) {
 }
 
 void LogRestoredId(int Id) {
-    s_Session.s_NextId = std::max(Id,s_Session.s_NextId);
+    // we have to make sure NextID is a free ID, because
+    // GetNextID returns a post-increment.
+    s_Session.s_NextId = std::max(Id + 1,s_Session.s_NextId);
 }
 
 void BuildNode(types::Node* node)
