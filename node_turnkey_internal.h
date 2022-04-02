@@ -66,82 +66,13 @@ types::Pin*  FindPin(ax::NodeEditor::PinId id);      // Convert a PinId to a Pin
 
 
 
-/*
-// i/o functions with backend (imgui-node-editor) that generally facilitate serialization of its
-// data.  Note this uses a new technique that i could have learned when I was 20, had I gone to a cs college!
-// this technique is explained here:
-// https://stackoverflow.com/questions/19808054/convert-c-function-pointer-to-c-function-pointer/19808250#19808250
-bool non_static_config_save_settings(const char* data, size_t size, ax::NodeEditor::SaveReasonFlags reason)
-{
-    s_Session.s_BlueprintData.reserve(size); //maybe not needed
-    s_Session.s_BlueprintData.assign(data);
-    std::ofstream out("project.txt");
-    out << s_Session.s_BlueprintData;
-    return true;
-};
 
-static bool static_config_save_settings(const char* data, size_t size, ax::NodeEditor::SaveReasonFlags reason, void* userPointer)
-{
-    SessionData* obj = (SessionData*) userPointer;
-    return obj->non_static_config_save_settings(data,size,reason);
-};
+// i/o functions with backend (imgui-node-editor) that generally facilitate serialization of its data.
+bool static_config_save_settings(const char* data, size_t size, ax::NodeEditor::SaveReasonFlags reason, void* userPointer);
+size_t static_config_load_settings(char* data, void* userPointer);
+size_t static_config_load_node_settings(ax::NodeEditor::NodeId nodeId, char* data, void* userPointer);
+bool static_config_save_node_settings(ax::NodeEditor::NodeId nodeId, const char* data, size_t size, ax::NodeEditor::SaveReasonFlags reason, void* userPointer);
 
-size_t non_static_config_load_settings(char* data)
-{
-    std::ifstream in("project.txt");
-    std::stringstream b;
-    b << in.rdbuf();
-    s_BlueprintData = b.str();
-
-    size_t size = s_BlueprintData.size();
-    if(data) {
-        memcpy(data,s_BlueprintData.c_str(),size);
-    }
-    return size;
-};
-
-static size_t static_config_load_settings(char* data, void* userPointer)
-{
-    SessionData* obj = (SessionData*) userPointer;
-    return obj->non_static_config_load_settings(data);
-};
-
-
-size_t non_static_config_load_node_settings(ax::NodeEditor::NodeId nodeId, char* data)
-{
-    auto node = FindNode(nodeId);
-    if (!node)
-        return 0;
-
-    if (data != nullptr)
-        memcpy(data, node->State.data(), node->State.size());
-    return node->State.size();
-};
-
-static size_t static_config_load_node_settings(ax::NodeEditor::NodeId nodeId, char* data, void* userPointer)
-{
-    SessionData* obj = (SessionData*) userPointer;
-    return obj->non_static_config_load_node_settings(nodeId,data);
-};
-
-
-bool non_static_config_save_node_settings(ax::NodeEditor::NodeId nodeId, const char* data, size_t size, ax::NodeEditor::SaveReasonFlags reason)
-{
-    auto node = FindNode(nodeId);
-    if (!node)
-        return false;
-
-    node->State.assign(data, size);
-
-    return true;
-};
-
-static bool static_config_save_node_settings(ax::NodeEditor::NodeId nodeId, const char* data, size_t size, ax::NodeEditor::SaveReasonFlags reason, void* userPointer)
-{
-    SessionData* obj = (SessionData*) userPointer;
-    return obj->non_static_config_save_node_settings(nodeId,data,size,reason);
-};
-*/
 
 } // inner namespace
 } // outer namespace

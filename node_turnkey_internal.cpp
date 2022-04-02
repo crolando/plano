@@ -170,6 +170,53 @@ void DrawPinIcon(const Pin& pin, bool connected, int alpha)
     ax::Widgets::Icon(ImVec2(s_Session.s_PinIconSize, s_Session.s_PinIconSize), iconType, connected, color, ImColor(32, 32, 32, alpha));
 };
 
+bool static_config_save_settings(const char* data, size_t size, ax::NodeEditor::SaveReasonFlags reason, void* userPointer)
+{
+    s_Session.s_BlueprintData.reserve(size); //maybe not needed
+    s_Session.s_BlueprintData.assign(data);
+    std::ofstream out("project.txt");
+    out << s_Session.s_BlueprintData;
+    return true;
+};
+
+size_t static_config_load_settings(char* data, void* userPointer)
+{
+    std::ifstream in("project.txt");
+    std::stringstream b;
+    b << in.rdbuf();
+    s_Session.s_BlueprintData = b.str();
+
+    size_t size = s_Session.s_BlueprintData.size();
+    if(data) {
+        memcpy(data,s_Session.s_BlueprintData.c_str(),size);
+    }
+    return size;
+};
+
+size_t static_config_load_node_settings(ax::NodeEditor::NodeId nodeId, char* data, void* userPointer)
+{
+     auto node = FindNode(nodeId);
+     if (!node)
+         return 0;
+
+     if (data != nullptr)
+         memcpy(data, node->State.data(), node->State.size());
+     return node->State.size();
+};
+
+
+bool static_config_save_node_settings(ax::NodeEditor::NodeId nodeId, const char* data, size_t size, ax::NodeEditor::SaveReasonFlags reason, void* userPointer)
+{
+    auto node = FindNode(nodeId);
+    if (!node)
+        return false;
+
+    node->State.assign(data, size);
+
+    return true;
+};
+
+
 
 } // inner namespace
 } // outer namespace

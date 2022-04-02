@@ -335,10 +335,10 @@ void Initialize(void)
 
     // https://stackoverflow.com/questions/19808054/convert-c-function-pointer-to-c-function-pointer/19808250#19808250
     //config.UserPointer = (void*) this;
-    //config.SaveSettings = turnkey::api::nodos_session_data::static_config_save_settings;
-    //config.LoadSettings = turnkey::api::nodos_session_data::static_config_load_settings;
-    //config.LoadNodeSettings = turnkey::api::nodos_session_data::static_config_load_node_settings;
-    //config.SaveNodeSettings = turnkey::api::nodos_session_data::static_config_save_node_settings;
+    config.SaveSettings = turnkey::internal::static_config_save_settings;
+    config.LoadSettings = turnkey::internal::static_config_load_settings;
+    config.LoadNodeSettings = turnkey::internal::static_config_load_node_settings;
+    config.SaveNodeSettings = turnkey::internal::static_config_save_node_settings;
 
     s_Session.m_Editor = ed::CreateEditor(&config);
     ed::SetCurrentEditor(s_Session.m_Editor);
