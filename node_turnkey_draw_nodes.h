@@ -2,7 +2,7 @@
 #define NODE_TURNKEY_DRAW_NODES_H
 #include <node_turnkey_api.h>
 #include <imgui.h>
-#include "utilities/widgets.h"
+#include "widgets.h"
 #include <imgui_node_editor.h>
 #include <example_property_im_draw.h>
 

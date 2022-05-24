@@ -1,7 +1,7 @@
 // This source file must have credited to thedmd on github.  This is a heavily modified version of this file, retrieved 12/27/2020:
 // https://github.com/thedmd/imgui-node-editor/blob/master/examples/blueprints-example/blueprints-example.cpp
 
-#include "utilities/widgets.h"
+#include "widgets.h"
 
 #include <imgui_node_editor.h>
 
