@@ -2,14 +2,27 @@
 #define NODE_TURNKEY_API_H
 
 # include <node_turnkey_types.h>
-# include <texture_manager.h>
-#include <cstring>
-#include <fstream>
-#include <iostream>
-#include <sstream>
+
 
 namespace turnkey {
 namespace api {
+// Texture functions. ================================================================= 
+// the burden is on YOU to implement these because they're platform dependent, and this
+// library is platform independent.  
+ 
+// LoadTexture should read a png file address, upload the image to the platform,
+// then return a texture ID.
+ImTextureID Application_LoadTexture(const char* path);
+
+// DestroyTexture should purge all memory used to store the texture built in LoadTexture
+void Application_DestroyTexture(ImTextureID);
+
+
+// GetTextureWidth returns the height of the texture in pixels
+unsigned int Application_GetTextureWidth(ImTextureID);
+
+// GetTextureHeight returns the height of the texture in pixels
+unsigned int Application_GetTextureHeight(ImTextureID);
 
 // Serialize & Deserialze Properties Callbacks =========================================
 //
@@ -107,6 +120,8 @@ types::SessionData* CreateContext();
 void                DestroyContext(types::SessionData*);
 types::SessionData* GetContext();
 void                SetContext(types::SessionData* context);
+
+
 
 // ~ Node Handling ~
 void RegisterNewNode(NodeDescription NewDescription); // register your NodeDescriptions here to make the runtime aware of your node type.

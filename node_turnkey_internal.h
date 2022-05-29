@@ -1,7 +1,7 @@
 #ifndef NODE_TURNKEY_INTERNAL_H
 #define NODE_TURNKEY_INTERNAL_H
 #include <node_turnkey_api.h>
-#include <texture_manager.h>
+
 
 namespace turnkey {
 
@@ -14,7 +14,7 @@ struct SessionData {
     std::map<std::string,
              api::NodeDescription> NodeRegistry; // The Node Registry stores the prototypes.
 
-                   texture_manager textures;     // Textures "own" the textures used.
+         //std::vector<ImTextureID>  textures;     // Textures "own" the textures used.
                               int  s_NextId = 1; // The session needs to keep track of what the next unclaimed ID for nodes, pins & links.
 
 

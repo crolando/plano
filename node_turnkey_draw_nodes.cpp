@@ -19,7 +19,9 @@ namespace internal {
 void draw_blueprint_style(Pin* newLinkPin)
 {
     ImGui::GetCursorScreenPos();
-    util::BlueprintNodeBuilder builder(s_Session.s_HeaderBackground, s_Session.textures.GetTextureWidth(s_Session.s_HeaderBackground), s_Session.textures.GetTextureHeight(s_Session.s_HeaderBackground));
+    unsigned int tex_x = Application_GetTextureWidth(s_Session.s_HeaderBackground);
+    unsigned int tex_y = Application_GetTextureHeight(s_Session.s_HeaderBackground);
+    util::BlueprintNodeBuilder builder(s_Session.s_HeaderBackground, tex_x, tex_y);
 
     // ====================================================================================================================================
     // NODOS DEV - draw nodes of type Blueprint and Simple

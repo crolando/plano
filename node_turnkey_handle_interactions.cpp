@@ -178,7 +178,7 @@ void handle_delete_interactions()
                     // Node deletion routine.
                     // First, we have to record a node's pin IDs before destroying the node and its pins.
                     auto node = *id;
-                    std::vector<uint> pin_ids;
+                    std::vector<unsigned int> pin_ids;
                     for(auto inp: node.Inputs)
                         pin_ids.push_back(inp.ID.Get());
                     for(auto outp: node.Outputs)

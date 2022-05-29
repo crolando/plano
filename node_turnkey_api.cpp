@@ -382,18 +382,18 @@ void Initialize(void)
     //
     //s_Links.push_back(Link(GetNextLinkId(), s_Nodes[14].Outputs[0].ID, s_Nodes[15].Inputs[0].ID));
 
-    s_Session.s_HeaderBackground = s_Session.textures.LoadTexture("Data/BlueprintBackground.png");
-    s_Session.s_SaveIcon         = s_Session.textures.LoadTexture("Data/ic_save_white_24dp.png");
-    s_Session.s_RestoreIcon      = s_Session.textures.LoadTexture("Data/ic_restore_white_24dp.png");
+    s_Session.s_HeaderBackground = Application_LoadTexture("Data/BlueprintBackground.png");
+    s_Session.s_SaveIcon         = Application_LoadTexture("Data/ic_save_white_24dp.png");
+    s_Session.s_RestoreIcon      = Application_LoadTexture("Data/ic_restore_white_24dp.png");
 
     //auto& io = ImGui::GetIO();
 }
 
 void Finalize(void)
 {
-    s_Session.textures.DestroyTexture(s_Session.s_RestoreIcon);
-    s_Session.textures.DestroyTexture(s_Session.s_SaveIcon);
-    s_Session.textures.DestroyTexture(s_Session.s_HeaderBackground);
+    Application_DestroyTexture(s_Session.s_RestoreIcon);
+    Application_DestroyTexture(s_Session.s_SaveIcon);
+    Application_DestroyTexture(s_Session.s_HeaderBackground);
     s_Session.s_RestoreIcon = nullptr;
     s_Session.s_SaveIcon = nullptr;
     s_Session.s_HeaderBackground = nullptr;
