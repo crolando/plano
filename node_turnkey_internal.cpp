@@ -86,6 +86,7 @@ bool isNodeAncestor(types::Node* Ancestor, types::Node* Decendent) {
             }
         } // Done searching ancestor nodes
     } // Done searching pins
+	return false;
 }
 
 ed::NodeId GetNextLinkId()
