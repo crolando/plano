@@ -1,5 +1,5 @@
-#include <node_turnkey_internal.h>
-#include <node_turnkey_handle_interactions.h>
+#include <internal/internal.h>
+#include <internal/handle_interactions.h>
 
 using namespace turnkey::internal;
 // ====================================================================================================================================

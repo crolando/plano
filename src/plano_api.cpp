@@ -1,7 +1,7 @@
 // This source file must have credited to thedmd on github.  This is a heavily modified version of this file, retrieved 12/27/2020:
 // https://github.com/thedmd/imgui-node-editor/blob/master/examples/blueprints-example/blueprints-example.cpp
 
-#include "widgets.h"
+#include "internal/widgets.h"
 
 #include <imgui_node_editor.h>
 
@@ -13,9 +13,9 @@
 
 #include <imgui_internal.h>
 
-#include <node_turnkey_internal.h>
-#include <node_turnkey_types.h>
-#include <node_turnkey_api.h>
+#include <internal/internal.h>
+#include <plano_types.h>
+#include <plano_api.h>
 
 
 #include <string>

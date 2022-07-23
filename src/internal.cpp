@@ -1,5 +1,5 @@
-#include <node_turnkey_internal.h>
-#include <draw_utils.h>
+#include <internal/internal.h>
+#include <internal/draw_utils.h>
 
 using namespace turnkey::types;
 namespace ed = ax::NodeEditor;

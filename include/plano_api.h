@@ -1,7 +1,7 @@
 #ifndef NODE_TURNKEY_API_H
 #define NODE_TURNKEY_API_H
 
-# include <node_turnkey_types.h>
+# include <plano_types.h>
 
 
 namespace turnkey {

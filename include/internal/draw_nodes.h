@@ -1,10 +1,10 @@
 #ifndef NODE_TURNKEY_DRAW_NODES_H
 #define NODE_TURNKEY_DRAW_NODES_H
-#include <node_turnkey_api.h>
+#include <plano_api.h>
 #include <imgui.h>
 #include "widgets.h"
 #include <imgui_node_editor.h>
-#include <example_property_im_draw.h>
+#include <internal/example_property_im_draw.h>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>

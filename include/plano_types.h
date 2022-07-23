@@ -2,8 +2,8 @@
 #define NODE_TURNKEY_TYPES_H
 
 // Types Section ==============================================================
-#include <widgets.h>
-#include <builders.h>
+#include <internal/widgets.h>
+#include <internal/builders.h>
 #include <string>
 #include <vector>
 #include <map>
@@ -18,7 +18,7 @@
 //
 // Feel free to add your own container, or a void* and recompile.
 // We give you this "slow but easy to use" generic container here:
-#include <attribute.h>
+#include <internal/attribute.h>
 typedef attr_table Properties;
 
 

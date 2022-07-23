@@ -1,4 +1,4 @@
-#include <node_turnkey_internal.h> // This brings in types and api as well.
+#include <internal/internal.h> // This brings in types and api as well.
                                    // also critically brings in s_Session, which these functions manipulate.
 using namespace turnkey::types;
 using namespace turnkey::api;

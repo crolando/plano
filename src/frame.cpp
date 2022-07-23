@@ -1,15 +1,15 @@
-#include <node_turnkey_internal.h>
+#include <internal/internal.h>
 #include <imgui.h>
-#include "widgets.h"
+#include "internal/widgets.h"
 #include <imgui_node_editor.h>
-#include <example_property_im_draw.h>
+#include <internal/example_property_im_draw.h>
 
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>
-#include <draw_utils.h>
-#include <node_turnkey_draw_nodes.h>
-#include <node_turnkey_handle_interactions.h>
+#include <internal/draw_utils.h>
+#include <internal/draw_nodes.h>
+#include <internal/handle_interactions.h>
 
 using namespace turnkey::types;
 using namespace turnkey::api;

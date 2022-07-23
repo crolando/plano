@@ -1,6 +1,6 @@
-#include <node_turnkey_internal.h>
-#include <node_turnkey_draw_nodes.h>
-#include <draw_utils.h>
+#include <internal/internal.h>
+#include <internal/draw_nodes.h>
+#include <internal/draw_utils.h>
 
 
 #define IMGUI_DEFINE_MATH_OPERATORS
