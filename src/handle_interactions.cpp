@@ -1,7 +1,7 @@
 #include <internal/internal.h>
 #include <internal/handle_interactions.h>
 
-using namespace turnkey::internal;
+using namespace plano::internal;
 // ====================================================================================================================================
 // NODOS DEV - Handle link-dragging interactions in immediate mode.
 // BeginCreate() - Handle dragging a link out of a pin
@@ -97,7 +97,7 @@ void handle_link_dragging_interactions(statepack& s)
                     if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f))
                     {
 
-                        s_Session.s_Links.emplace_back(turnkey::types::Link(GetNextId(), startPinId, endPinId));
+                        s_Session.s_Links.emplace_back(plano::types::Link(GetNextId(), startPinId, endPinId));
                         s_Session.s_Links.back().Color = GetIconColor(startPin->Type);
                     }
                 }

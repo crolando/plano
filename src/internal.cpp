@@ -1,10 +1,10 @@
 #include <internal/internal.h>
 #include <internal/draw_utils.h>
 
-using namespace turnkey::types;
+using namespace plano::types;
 namespace ed = ax::NodeEditor;
 
-namespace turnkey {
+namespace plano {
 namespace internal {
 
 types::SessionData s_Session;

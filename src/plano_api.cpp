@@ -28,16 +28,16 @@
 #include <iostream>
 #include <sstream>
 
-using namespace turnkey::types;
-using namespace turnkey::api;
-using namespace turnkey::internal;
+using namespace plano::types;
+using namespace plano::api;
+using namespace plano::internal;
 
 namespace ed = ax::NodeEditor;
 namespace util = ax::NodeEditor::Utilities;
 using namespace ax;
 using ax::Widgets::IconType;
 
-namespace turnkey {
+namespace plano {
 namespace api {
 
 
@@ -178,7 +178,7 @@ void LoadNodesAndLinksFromBuffer(const size_t in_size, const char* buffer)
 
 
         // construct a link
-        turnkey::types::Link l = turnkey::types::Link(link_id,start_pin_id,end_pin_id);
+        plano::types::Link l = plano::types::Link(link_id,start_pin_id,end_pin_id);
 
 
         // attach it to session
@@ -229,7 +229,7 @@ char* SaveNodesAndLinksToBuffer(size_t* size)
 
         // The next line is a number describing the count of properties lines.
         // so first we get the property lines.
-        std::string props = turnkey::api::Prop_Serialize(s_Session.s_Nodes[i].Properties);
+        std::string props = plano::api::Prop_Serialize(s_Session.s_Nodes[i].Properties);
         // then compute the number of properties based on lines / 3
         int n = std::count(props.begin(), props.end(), '\n');
         int count = n / 3;
@@ -335,10 +335,10 @@ void Initialize(void)
 
     // https://stackoverflow.com/questions/19808054/convert-c-function-pointer-to-c-function-pointer/19808250#19808250
     //config.UserPointer = (void*) this;
-    config.SaveSettings = turnkey::internal::static_config_save_settings;
-    config.LoadSettings = turnkey::internal::static_config_load_settings;
-    config.LoadNodeSettings = turnkey::internal::static_config_load_node_settings;
-    config.SaveNodeSettings = turnkey::internal::static_config_save_node_settings;
+    config.SaveSettings = plano::internal::static_config_save_settings;
+    config.LoadSettings = plano::internal::static_config_load_settings;
+    config.LoadNodeSettings = plano::internal::static_config_load_node_settings;
+    config.SaveNodeSettings = plano::internal::static_config_save_node_settings;
 
     s_Session.m_Editor = ed::CreateEditor(&config);
     ed::SetCurrentEditor(s_Session.m_Editor);

@@ -6,15 +6,15 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>
 
-using namespace turnkey::types;
-using namespace turnkey::api;
-using namespace turnkey::internal;
+using namespace plano::types;
+using namespace plano::api;
+using namespace plano::internal;
 namespace ed = ax::NodeEditor;
 namespace util = ax::NodeEditor::Utilities;
 using namespace ax;
 using ax::Widgets::IconType;
 
-namespace turnkey {
+namespace plano {
 namespace internal {
 void draw_blueprint_style(Pin* newLinkPin)
 {

@@ -6,12 +6,12 @@
 
 
 // C to Instance adaptor
-std::string turnkey::api::Prop_Serialize(const attr_table& Prop_In)
+std::string plano::api::Prop_Serialize(const attr_table& Prop_In)
 {
     return Prop_In.serialize();
 }
 
-void turnkey::api::Prop_Deserialize(attr_table& Prop_In, const std::string& serialized_table)
+void plano::api::Prop_Deserialize(attr_table& Prop_In, const std::string& serialized_table)
 {
     return Prop_In.deseralize(serialized_table);
 }

@@ -4,7 +4,7 @@
 # include <plano_types.h>
 
 
-namespace turnkey {
+namespace plano {
 namespace api {
 // Texture functions. ================================================================= 
 // the burden is on YOU to implement these because they're platform dependent, and this
@@ -108,7 +108,7 @@ struct NodeDescription {
     void (*DrawAndEditProperties)(Properties&);
 
     // (For offline-update pattern) The system would like you to "execute" your node
-    void (*Execute)(Properties&,const std::vector<turnkey::types::Link>& Inputs, const std::vector<turnkey::types::Link>& Outputs);
+    void (*Execute)(Properties&,const std::vector<plano::types::Link>& Inputs, const std::vector<plano::types::Link>& Outputs);
 
     // (For offline-update pattern) The system wants you to kill the execution of your node.
     void (*KillExecution)(void);

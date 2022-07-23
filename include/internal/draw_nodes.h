@@ -12,9 +12,9 @@
 // newLinkPin is used here to cause runtime highlighting of relavent candidate pins
 // when you are dragging a link.
 
-namespace turnkey {
+namespace plano {
 namespace internal {
-void draw_nodes(turnkey::types::Pin* newLinkPin);
+void draw_nodes(plano::types::Pin* newLinkPin);
 }
 }
 #endif // NODE_TURNKEY_DRAW_NODES_H
