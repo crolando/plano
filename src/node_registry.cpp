@@ -6,6 +6,37 @@ using namespace plano::api;
 namespace plano {
 namespace internal {
 
+// oh this is the worst haha
+PinType ParsePinType(const std::string& TypeStr) {
+    if (TypeStr == "Flow") {
+        return PinType::Flow;
+    }
+    if (TypeStr == "Bool") {
+        return PinType::Bool;
+    }
+    if (TypeStr == "Int") {
+        return PinType::Int;
+    }
+    if (TypeStr == "Float") {
+        return PinType::Float;
+    }
+    if (TypeStr == "String") {
+        return PinType::String;
+    }
+    if (TypeStr == "Object") {
+        return PinType::Object;
+    }
+    if (TypeStr == "Function") {
+        return PinType::Function;
+    }
+    if (TypeStr == "Delegate") {
+        return PinType::Delegate;
+    }
+    printf("whoops");
+    return PinType::Bool;
+    
+}
+
 // This spawns a fresh node using the node definitions loaded into the registry.
 // The properties of the node are intialized with defaults from the definition.
 Node* NewRegistryNode(const std::string& NodeName) {
@@ -19,10 +50,14 @@ Node* NewRegistryNode(const std::string& NodeName) {
     s_Session.s_Nodes.emplace_back(GetNextId(), Desc.Type.c_str());
 
     // Handle creating the pins
-    for(PinDescription p : Desc.Inputs)
-        s_Session.s_Nodes.back().Inputs.emplace_back(GetNextId(), p.Label.c_str(), PinType::Flow);
-    for(PinDescription p : Desc.Outputs)
-        s_Session.s_Nodes.back().Outputs.emplace_back(GetNextId(), p.Label.c_str(), PinType::Flow);
+    for (PinDescription p : Desc.Inputs) {
+        PinType pt = ParsePinType(p.DataType);
+        s_Session.s_Nodes.back().Inputs.emplace_back(GetNextId(), p.Label.c_str(), pt);
+    }
+    for (PinDescription p : Desc.Outputs) {
+        PinType pt = ParsePinType(p.DataType);
+        s_Session.s_Nodes.back().Outputs.emplace_back(GetNextId(), p.Label.c_str(), pt);
+    }
 
     Desc.InitializeDefaultProperties(s_Session.s_Nodes.back().Properties);
 
