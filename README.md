@@ -1,4 +1,4 @@
-# imgui-node-editor-turnkey
+# plano
 refactor &amp; augmentation of thedmd's imgui-node-editor blueprint example to be a more plug-and-play library.
 
 Loads of code taken from: https://github.com/thedmd/imgui-node-editor
