@@ -1,0 +1,7 @@
+
+*.vsidx
+*.lock
+*.db
+*.json
+*.sqlite
+.vs/plano/v17/.suo
