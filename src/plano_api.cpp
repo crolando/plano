@@ -382,9 +382,9 @@ void Initialize(void)
     //
     //s_Links.push_back(Link(GetNextLinkId(), s_Nodes[14].Outputs[0].ID, s_Nodes[15].Inputs[0].ID));
 
-    s_Session.s_HeaderBackground = Application_LoadTexture("../imgui-node-editor-turnkey/data/BlueprintBackground.png");
-    s_Session.s_SaveIcon         = Application_LoadTexture("../imgui-node-editor-turnkey/data/ic_save_white_24dp.png");
-    s_Session.s_RestoreIcon      = Application_LoadTexture("../imgui-node-editor-turnkey/data/ic_restore_white_24dp.png");
+    s_Session.s_HeaderBackground = Application_LoadTexture("../plano/data/BlueprintBackground.png"); 
+    s_Session.s_SaveIcon         = Application_LoadTexture("../plano/data/ic_save_white_24dp.png"); 
+    s_Session.s_RestoreIcon      = Application_LoadTexture("../plano/data/ic_restore_white_24dp.png"); 
 
     //auto& io = ImGui::GetIO();
 }
