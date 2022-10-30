@@ -1,5 +1,5 @@
-#ifndef NODE_TURNKEY_TYPES_H
-#define NODE_TURNKEY_TYPES_H
+#ifndef PLANO_TYPES_H
+#define PLANO_TYPES_H
 
 // Types Section ==============================================================
 #include <internal/widgets.h>
@@ -25,10 +25,8 @@ typedef attr_table Properties;
 namespace plano {
 namespace types {
 
-// Context for the turnkey system.
+// Context for the PLANO system.
 // This is a forward declaration.
-// This is fully declared in node_turnkey_internal.h
-// and then implemented in node_turnkey_internal.cpp
 struct SessionData;
 
 enum class PinType

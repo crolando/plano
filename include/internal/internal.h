@@ -1,5 +1,5 @@
-#ifndef NODE_TURNKEY_INTERNAL_H
-#define NODE_TURNKEY_INTERNAL_H
+#ifndef PLANO_INTERNAL_H
+#define PLANO_INTERNAL_H
 #include <plano_api.h>
 
 
@@ -26,7 +26,7 @@ struct SessionData {
                        ImTextureID s_SaveIcon = nullptr;
                        ImTextureID s_RestoreIcon = nullptr;
 };
-} // end of turnkey::types namespace.
+} // end of plano::types namespace.
 
 namespace internal {
 
