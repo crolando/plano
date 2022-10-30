@@ -109,7 +109,7 @@ public:
     attr_value& get_attr(const attr_name& Key);
 
     // serializer.
-    std::string serialize() const;
+    std::string serialize(int& entries) const;
 
     // deseralizer
     void deseralize(const std::string& serialized_table);

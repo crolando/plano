@@ -34,9 +34,10 @@ Node* NewRegistryNode(const std::string& NodeName) {
 }
 
 // This restores a node using the node definitions loaded into the registry.
-// The properties of the node are copied in via deserialization of the project file.
+// The properties are NOT restored - The caller must restore the properties onto
+// the Node* that is returned.  
 #include <vector>
-void RestoreRegistryNode(const std::string& NodeName, const std::string* Properties, int id, const std::vector<int>& pin_ids)
+plano::types::Node* RestoreRegistryNode(const std::string& NodeName, int id, const std::vector<int>& pin_ids)
 {
     // Standard node spawner behavior, only we construct the objects
     // using the registry data.
@@ -53,11 +54,10 @@ void RestoreRegistryNode(const std::string& NodeName, const std::string* Propert
     for(PinDescription p : Desc.Outputs)
         s_Session.s_Nodes.back().Outputs.emplace_back(pin_ids[pin_id_idx++], p.Label.c_str(), PinType::Flow);
 
-    // Handle property through deserialization
-    plano::api::Prop_Deserialize(s_Session.s_Nodes.back().Properties,*Properties);
-
     // Standard scrubber from examples.
     BuildNode(&s_Session.s_Nodes.back());
+
+    return &s_Session.s_Nodes.back();
 }
 } // inner namespace
 } // outer namespace

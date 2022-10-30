@@ -1,6 +1,8 @@
 #ifndef NODE_TURNKEY_API_H
 #define NODE_TURNKEY_API_H
 
+
+# include <plano_properties.h>
 # include <plano_types.h>
 
 
@@ -24,18 +26,7 @@ unsigned int Application_GetTextureWidth(ImTextureID);
 // GetTextureHeight returns the height of the texture in pixels
 unsigned int Application_GetTextureHeight(ImTextureID);
 
-// Serialize & Deserialze Properties Callbacks =========================================
-//
-// In order to support saving and loading these strings and numbers to a "project file"
-// and because this is so tightly coupled withe data representation, you must expose
-// a serailze and deserialize routine.
-//
-// We give you this "slow but easy to use" generic container here:
-// Note these are implemented in attribute.cpp
-std::string Prop_Serialize (const Properties& Prop_In);
-void        Prop_Deserialize(Properties& Prop_In, const std::string& serialized_table);
-
-// Serialze & Deserialize EVERYTHING Functions =========================================
+// Serialze & Deserialize Graph State Functions =========================================
 //
 // handles: node types, positions, pin connections, properties, the whole shebang.
 //
@@ -95,14 +86,14 @@ struct NodeDescription {
     // when the graph or user needs your node to do things.
 
     // Please provide a function of type
-    // void function_name(Properties&);  (where properties are defined in node_turnkey_types.h)
+    // void function_name(Properties&);  (where properties are defined in plano_properties.h)
     // We will call it when a new node is created.
     // In your function, please add default key value pairs
     // into the attribute table.
     void (*InitializeDefaultProperties)(Properties&);
 
     // Please provide a function of type
-    // void function_name(Properties&); (where properties are defined in node_turnkey_types.h)
+    // void function_name(Properties&); (where properties are defined in plano_properties.h)
     // This is your IMGUI draw callback.  Your job is to read and
     // write properties values using IMGUI widgets.
     void (*DrawAndEditProperties)(Properties&);

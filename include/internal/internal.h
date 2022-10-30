@@ -59,7 +59,7 @@ types::Pin*  FindPin(ax::NodeEditor::PinId id);      // Convert a PinId to a Pin
         // Used in Deserialization (loading material from a save file) routines.
         // Very similar to NewRegistryNode but with different ID
         // todo: make private
-        void RestoreRegistryNode(const std::string& NodeName,const std::string* Properties, int id, const std::vector<int>& pin_ids);
+        types::Node* RestoreRegistryNode(const std::string& NodeName, int id, const std::vector<int>& pin_ids);
 
         // Create a fresh node at runtime, not through deserialization.
         types::Node* NewRegistryNode(const std::string& NodeName);

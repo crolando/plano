@@ -148,7 +148,9 @@ void LoadNodesAndLinksFromBuffer(const size_t in_size, const char* buffer)
         // (new node definition system)
         if (s_Session.NodeRegistry.count(NodeName) > 0)
         {
-            RestoreRegistryNode(NodeName,&Properties,id,pin_ids);
+            Node* n = RestoreRegistryNode(NodeName,id,pin_ids);
+            // Handle property through deserialization
+            Prop_Deserialize(n->Properties, Properties);
 
         } // Done with node instantiation.
     } // Done with a node processing section.  Loop back if there's another node (more lines in getline)
@@ -228,12 +230,11 @@ char* SaveNodesAndLinksToBuffer(size_t* size)
 
 
         // The next line is a number describing the count of properties lines.
-        // so first we get the property lines.
-        std::string props = plano::api::Prop_Serialize(s_Session.s_Nodes[i].Properties);
-        // then compute the number of properties based on lines / 3
-        int n = std::count(props.begin(), props.end(), '\n');
-        int count = n / 3;
+        int count;
+        std::string props = Prop_Serialize(s_Session.s_Nodes[i].Properties, count);
+
         out << count << std::endl;
+
         // Then the next lines are the actual property lines.
         out << props;
     }

@@ -8,19 +8,7 @@
 #include <vector>
 #include <map>
 
-// The user needs to specify a type that stores all the node instance UI data.
-// You will use this type in your node drawing routines to track strings and numbers
-// in the widgets.
-//
-// In order to support saving and loading these strings and numbers to a "project file"
-// and because this is so tightly coupled withe data representation, you must also expose
-// a serailze and deserialize routine.
-//
-// Feel free to add your own container, or a void* and recompile.
-// We give you this "slow but easy to use" generic container here:
-#include <internal/attribute.h>
-typedef attr_table Properties;
-
+#include <plano_properties.h>
 
 namespace plano {
 namespace types {

@@ -6,12 +6,12 @@
 
 
 // C to Instance adaptor
-std::string plano::api::Prop_Serialize(const attr_table& Prop_In)
+std::string Prop_Serialize(const attr_table& Prop_In, int& entries)
 {
-    return Prop_In.serialize();
+    return Prop_In.serialize(entries);
 }
 
-void plano::api::Prop_Deserialize(attr_table& Prop_In, const std::string& serialized_table)
+void Prop_Deserialize(attr_table& Prop_In, const std::string& serialized_table)
 {
     return Prop_In.deseralize(serialized_table);
 }
@@ -120,10 +120,11 @@ attr_value& attr_table::get_attr(const attr_name& Key) {
 }
 
 
-std::string attr_table::serialize() const
+std::string attr_table::serialize(int &entries) const
 {
     std::string seralization;
     attr_type attribute_type;
+    entries = table.size();
     int count = 0;
     for (const auto& kv : table) {
         seralization.append(kv.first);
