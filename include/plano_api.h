@@ -61,15 +61,15 @@ char* SaveNodesAndLinksToBuffer(size_t* size);
 
 struct PinDescription {
     std::string Label;
-    std::string DataType;
+    plano::types::PinType DataType;
 
     // Basic init constuctor
-    PinDescription():
+    PinDescription() :
         Label(""),
-        DataType(""){};
+        DataType(plano::types::PinType::Flow) {};
 
     // Concise constructor
-    PinDescription(std::string Label,std::string DataType):
+    PinDescription(std::string Label, plano::types::PinType DataType):
         Label(Label),
         DataType(DataType){};
 };
