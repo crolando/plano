@@ -175,19 +175,11 @@ bool static_config_save_settings(const char* data, size_t size, ax::NodeEditor::
 {
     s_Session.s_BlueprintData.reserve(size); //maybe not needed
     s_Session.s_BlueprintData.assign(data);
-    std::ofstream out("project.txt");
-    out << s_Session.s_BlueprintData;
     return true;
 };
 
 size_t static_config_load_settings(char* data, void* userPointer)
-{
-    std::ifstream in("project.txt");
-    std::stringstream b;
-    b << in.rdbuf();
-    s_Session.s_BlueprintData = b.str();
-
-    size_t size = s_Session.s_BlueprintData.size();
+{   size_t size = s_Session.s_BlueprintData.size();
     if(data) {
         memcpy(data,s_Session.s_BlueprintData.c_str(),size);
     }

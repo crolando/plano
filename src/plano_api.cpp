@@ -91,7 +91,12 @@ void LoadNodesAndLinksFromBuffer(const size_t in_size, const char* buffer)
     std::string Properties; // Whole, intact, Properties table after the loop.
     int PropertiesCount; // Count of properties lines under a node section.
 
-    // First overall line is node count.
+    // First line is config json.
+    std::getline(inf, line);
+    s_Session.s_BlueprintData = line;
+
+
+    // second overall line is node count.
     std::getline(inf,line);
 
     int node_count = std::stol(line);
@@ -197,7 +202,11 @@ char* SaveNodesAndLinksToBuffer(size_t* size)
     // std::ofstream out("nodos_project.txt");
     std::ostringstream out;
 
-    // write node count first
+    // First line is the config data from the backend.  This data is automatically saved to s_Session.s_BlueprintData
+    // using callbacks that were registered to the engine's config strucutre on engine initialization. 
+    out << s_Session.s_BlueprintData << std::endl;
+
+    // Second line is the write node count first
     out << s_Session.s_Nodes.size() << std::endl;
 
     // For every node in s_Nodes...
