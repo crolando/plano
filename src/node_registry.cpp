@@ -15,8 +15,8 @@ Node* NewRegistryNode(const std::string& NodeName) {
     // NodeRegistry is a map, so we need the value.
     NodeDescription Desc = s_Session.NodeRegistry[NodeName];
 
-    // Create node object and pass the type name.
-    s_Session.s_Nodes.emplace_back(GetNextId(), Desc.Type.c_str());
+    // Create node object and pass the type name & color
+    s_Session.s_Nodes.emplace_back(GetNextId(), Desc.Type.c_str(),Desc.Color);
 
     // Handle creating the pins
     for(PinDescription p : Desc.Inputs)
@@ -44,8 +44,8 @@ plano::types::Node* RestoreRegistryNode(const std::string& NodeName, int id, con
     // NodeRegistry is a map, so we need the value.
     NodeDescription Desc = s_Session.NodeRegistry[NodeName];
 
-    // Create node object and pass the type name.
-    s_Session.s_Nodes.emplace_back(id, Desc.Type.c_str());
+    // Create node object and pass the type name and color.
+    s_Session.s_Nodes.emplace_back(id, Desc.Type.c_str(),Desc.Color);
 
     // Handle creating the pins
     int pin_id_idx = 0;

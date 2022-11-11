@@ -79,6 +79,7 @@ struct NodeDescription {
     std::string Type;
     std::vector<PinDescription> Inputs;
     std::vector<PinDescription> Outputs;
+    ImColor Color = ImColor(255, 255, 255); // default color
 
     // In this section we ask you give us function pointers.
     // Please define functions of the type required, then
