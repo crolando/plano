@@ -1,139 +1,67 @@
-#ifndef NODE_TURNKEY_API_H
-#define NODE_TURNKEY_API_H
-
-
+#ifndef NODE_PLANO_API_H
+#define NODE_PLANO_API_H
+/* 
+* Plano - A Plug-and-play Imgui Node Editor
+*/
 # include <plano_properties.h>
 # include <plano_types.h>
 
-
 namespace plano {
-namespace api {
-// Texture functions. ================================================================= 
-// the burden is on YOU to implement these because they're platform dependent, and this
-// library is platform independent.  
- 
-// LoadTexture should read a png file address, upload the image to the platform,
-// then return a texture ID.
-ImTextureID Application_LoadTexture(const char* path);
+namespace api {    
+    struct NodeDescription; // Forward declaration.
+    struct PinDescription; // Forward declaration.
 
-// DestroyTexture should purge all memory used to store the texture built in LoadTexture
-void Application_DestroyTexture(ImTextureID);
+    // Plano Context Management 
+    // These calls manipulate the global context variable, on which the other API calls operate on.
+    types::SessionData* CreateContext();  // Typically used with: plano::api::SetContext(plano::api::CreateContext());
+    types::SessionData* GetContext();
+    void                SetContext(types::SessionData* context);
+    void                DestroyContext(types::SessionData*);
 
+    // Drawing Subsystem Routines 
+    void Initialize(void); // Upload textures needed by the node system
+    void Frame(void);      // Draws nodes and handles interactions. Call in your draw loop.
+    void Finalize(void);   // Destroy textures
 
-// GetTextureWidth returns the height of the texture in pixels
-unsigned int Application_GetTextureWidth(ImTextureID);
+    // Node Prototype Registration     
+    void RegisterNewNode(NodeDescription NewDescription);    // Call this to make the system aware of a node type. Called once per node type.
 
-// GetTextureHeight returns the height of the texture in pixels
-unsigned int Application_GetTextureHeight(ImTextureID);
+    // Texture Callbacks that you have to implement 
+    // For an example, see the Nodos project.      
+    ImTextureID  Application_LoadTexture(const char* path);  // Take a PNG and upload it to the graphics card. Return an ID.        
+    void         Application_DestroyTexture(ImTextureID);    // Take an ID and free the memory         
+    unsigned int Application_GetTextureWidth(ImTextureID);   // Take and ID and report the width in pixels    
+    unsigned int Application_GetTextureHeight(ImTextureID);  // Take and ID and report the height in pixels    
 
-// Serialze & Deserialize Graph State Functions =========================================
-//
-// handles: node types, positions, pin connections, properties, the whole shebang.
-//
-// All the other serizliation stuff, like node positions, what node types are in the graph,
-// where the links are connected to, etc etc etc are handled automatically.  These calls
-// end up calling the above ones.  These are your master load/save IO for turnkey.
-// write this shit to a file, and then load it and then back you are.
+    // Project Save and Load functions
+    char* SaveNodesAndLinksToBuffer(size_t* size);           // Serialize the graph to a char*.  Writes length to "size". You must manually free the return value with delete.
+    void  LoadNodesAndLinksFromBuffer(const size_t in_size,  const char *buffer);  // Opposite of above.  
 
+    // Node Description Struct
+    // Think of this as an application you fill out that describes a node type.  Register with RegisterNewNode().
+    struct NodeDescription {
+        std::string Type;                       // The name of the node. Used to spawn the node.
+        std::vector<PinDescription> Inputs;     // Input pin descriptions.  Element 0 is at the top left of the node 
+        std::vector<PinDescription> Outputs;    // Output pin descriptions. Element 0 is at the top right of the node
+        ImColor Color = ImColor(255, 255, 255); // The style color added at the top of the node
+        
+        // NodeDescrption Function Pointers
+        // You must implement these per node to define widget behavior and values.  See Nodos project for examples.
+        void (*InitializeDefaultProperties)(Properties&); // Set default values for node widget values. Called when constructing a fresh node at runtime (not deserialization).        
+        void (*DrawAndEditProperties)(Properties&);       // Called when it is time to draw the node's widgets.  Restore, edit and save the widget values in the properties table.
+    };
 
+    // Pin Description Struct
+    struct PinDescription {
+        std::string Label;               // Words printed next to the pin icon
+        plano::types::PinType DataType;  // Controls the icon, icon color, and connection enforcement (eg you can't connect a string to a float).
 
-
-
-void LoadNodesAndLinksFromBuffer(const size_t in_size,  const char *buffer);
-
-// SaveNodesAndLinksToBuffer()
-// Move all the graph's data to a buffer.  Put this data into your "project" files!
-//
-// This returns a heap address that YOU are responsible for clearing.
-// You MUST use "delete"; you cannot use "free".
-//
-// This function is an example of a "multiple return value" pattern. It writes to
-// the arguement, and includes a return value.  Below is an example.
-//
-// useage example:
-//    size_t size;
-//    char* cbuffer  = turnkey::api::SaveNodesAndLinksToBuffer(&size);
-//    // Save "size" count characters from "cbuffer" to a file.
-//    delete cbuffer;
-//
-char* SaveNodesAndLinksToBuffer(size_t* size);
-
-
-struct PinDescription {
-    std::string Label;
-    plano::types::PinType DataType;
-
-    // Basic init constuctor
-    PinDescription() :
-        Label(""),
-        DataType(plano::types::PinType::Flow) {};
-
-    // Concise constructor
-    PinDescription(std::string Label, plano::types::PinType DataType):
-        Label(Label),
-        DataType(DataType){};
-};
-
-// Please fill out this form and then register it.
-struct NodeDescription {
-    std::string Type;
-    std::vector<PinDescription> Inputs;
-    std::vector<PinDescription> Outputs;
-    ImColor Color = ImColor(255, 255, 255); // default color
-
-    // In this section we ask you give us function pointers.
-    // Please define functions of the type required, then
-    // add them to the forms.  These will be called
-    // when the graph or user needs your node to do things.
-
-    // Please provide a function of type
-    // void function_name(Properties&);  (where properties are defined in plano_properties.h)
-    // We will call it when a new node is created.
-    // In your function, please add default key value pairs
-    // into the attribute table.
-    void (*InitializeDefaultProperties)(Properties&);
-
-    // Please provide a function of type
-    // void function_name(Properties&); (where properties are defined in plano_properties.h)
-    // This is your IMGUI draw callback.  Your job is to read and
-    // write properties values using IMGUI widgets.
-    void (*DrawAndEditProperties)(Properties&);
-
-    // (For offline-update pattern) The system would like you to "execute" your node
-    void (*Execute)(Properties&,const std::vector<plano::types::Link>& Inputs, const std::vector<plano::types::Link>& Outputs);
-
-    // (For offline-update pattern) The system wants you to kill the execution of your node.
-    void (*KillExecution)(void);
-};
-
-// Context management.
-// These calls set a global context variable, under which other API calls operate on.
-types::SessionData* CreateContext();
-void                DestroyContext(types::SessionData*);
-types::SessionData* GetContext();
-void                SetContext(types::SessionData* context);
-
-
-
-// ~ Node Handling ~
-void RegisterNewNode(NodeDescription NewDescription); // register your NodeDescriptions here to make the runtime aware of your node type.
-
-// Overall System Start / Frame / Stop calls
-// TODO: Init/Finailze should amost certainly be ported to the above context systems.
-void Initialize(void); // Creates sets up and configures imgui_node_editor backend
-void Frame(void);      // Draws nodes and handles interactions.
-void Finalize(void);   // Cleanup.
-
-
-// // Destroy Node (Node*)
-// NodePrototypeID = RegisterNode (NodePrototype prototype)
-// NodeInstanceID = Create Node (NodePrototypeID type);
-
-// LinkInstanceID[] = GetLinkInstances()
-// NodeInstanceID[] = GetNodeInstances()
-
-
+        // Constructor
+        PinDescription(std::string Label, plano::types::PinType DataType):
+            Label(Label),
+            DataType(DataType){};
+    };
 
 } // end api namespace
-} // end turnkey namespace
-#endif // NODE_TURNKEY_API_H
+} // end plano namespace
+#endif // PLANO_API_H
