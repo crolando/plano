@@ -16,6 +16,7 @@
 #include <internal/internal.h>
 #include <plano_types.h>
 #include <plano_api.h>
+#include <internal/draw_utils.h> // GetIconColor is needed to color links at link load time
 
 
 #include <string>
@@ -186,7 +187,7 @@ void LoadNodesAndLinksFromBuffer(const size_t in_size, const char* buffer)
 
         // construct a link
         plano::types::Link l = plano::types::Link(link_id,start_pin_id,end_pin_id);
-
+        l.Color = GetIconColor(FindPin(start_pin_id)->Type);
 
         // attach it to session
         s_Session.s_Links.push_back(std::move(l));
