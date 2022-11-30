@@ -392,11 +392,15 @@ void Initialize(void)
     //s_Links.push_back(Link(GetNextLinkId(), s_Nodes[5].Outputs[0].ID, s_Nodes[7].Inputs[0].ID));
     //
     //s_Links.push_back(Link(GetNextLinkId(), s_Nodes[14].Outputs[0].ID, s_Nodes[15].Inputs[0].ID));
-
+#ifdef __APPLE__
+    s_Session.s_HeaderBackground = Application_LoadTexture("/Users/crolando/Code/plano/data/BlueprintBackground.png");
+    s_Session.s_SaveIcon         = Application_LoadTexture("/Users/crolando/Code/plano/data/ic_save_white_24dp.png");
+    s_Session.s_RestoreIcon      = Application_LoadTexture("/Users/crolando/Code/plano/data/ic_restore_white_24dp.png");
+#else
     s_Session.s_HeaderBackground = Application_LoadTexture("../plano/data/BlueprintBackground.png"); 
     s_Session.s_SaveIcon         = Application_LoadTexture("../plano/data/ic_save_white_24dp.png"); 
     s_Session.s_RestoreIcon      = Application_LoadTexture("../plano/data/ic_restore_white_24dp.png"); 
-
+#endif
     //auto& io = ImGui::GetIO();
 }
 
