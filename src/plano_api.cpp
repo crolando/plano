@@ -225,7 +225,7 @@ char* SaveNodesAndLinksToBuffer(size_t* size)
         int pin_count = output_pin_count + input_pin_count;
         out << pin_count << std::endl;
 
-        // dump by the input pin ids
+        // dump the input pin ids
         for (int input_idx = 0; input_idx < input_pin_count; input_idx++ )
         {
             out << s_Session.s_Nodes[i].Inputs[input_idx].ID.Get() << std::endl;
@@ -237,10 +237,8 @@ char* SaveNodesAndLinksToBuffer(size_t* size)
             out << s_Session.s_Nodes[i].Outputs[output_idx].ID.Get() << std::endl;
         }
 
-
-
         // The next line is a number describing the count of properties lines.
-        int count;
+        unsigned long count;
         std::string props = Prop_Serialize(s_Session.s_Nodes[i].Properties, count);
 
         out << count << std::endl;
