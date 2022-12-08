@@ -20,6 +20,7 @@ public:
     std::map <std::string, std::string> pstring;
     std::map <std::string, int>         pint;
     std::map <std::string, float>       pfloat;
+    std::map <std::string, bool>        pbool;
     
     // serializer.
     // returns the serialized text.

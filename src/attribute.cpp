@@ -39,6 +39,19 @@ std::string attr_table::serialize(unsigned long &entries) const
         entries++; // track property count
     }
     
+    for(const auto& kv : pbool) {
+        serialization.append(kv.first + "\n"); // write key
+        if(kv.second) {
+            serialization.append("1\n"); // write true
+        } else {
+            serialization.append("0\n"); // write false
+        }
+        serialization.append("b\n"); // write type flag;
+        entries++; // track property count
+    } ///////////////// HEY DO THE DESERIALIZER AND YOU SHOULD BE DONE AND GET BACK TO THE CHECKBOX
+    
+    
+    
     return serialization;
 }
 
@@ -65,6 +78,8 @@ void attr_table::deseralize(const std::string& serialized_table) {
             case 's' : pstring[line1] = line2;            break;
             case 'f' : pfloat[line1]  = std::stof(line2); break;
             case 'i' : pint[line1]    = std::stoi(line2); break;
+            case 'b' : pbool[line1]   = std::stoi(line2) == 1 ? true : false;
+                        
         }
     }
 }
