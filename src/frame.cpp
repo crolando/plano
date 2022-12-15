@@ -30,7 +30,7 @@ void Frame(void)
 
     //ImGui::Text("FPS: %.2f (%.2gms)", io.Framerate, io.Framerate ? 1000.0f / io.Framerate : 0.0f);
 
-    ed::SetCurrentEditor(s_Session.m_Editor);
+    ed::SetCurrentEditor(s_Session->m_Editor);
 
     //auto& style = ImGui::GetStyle();
 
@@ -71,7 +71,7 @@ void Frame(void)
     // ====================================================================================================================================
     // NODOS DEV - draw links
     // ====================================================================================================================================
-    for (auto& link : s_Session.s_Links)
+    for (auto& link : s_Session->s_Links)
         ed::Link(link.ID, link.StartPinID, link.EndPinID, link.Color, 2.0f);
 
     // ====================================================================================================================================
@@ -205,7 +205,7 @@ void Frame(void)
         Node* node = nullptr;
 
         // Populate the context right click menu with all the nodes in the registry.
-        for(auto nodos: s_Session.NodeRegistry){
+        for(auto nodos: s_Session->NodeRegistry){
             if (ImGui::MenuItem(nodos.first.c_str())){
                 node = NewRegistryNode(nodos.first);
             }
@@ -234,8 +234,8 @@ void Frame(void)
                         if (startPin->Kind == ed::PinKind::Input)
                             std::swap(startPin, endPin);
 
-                        s_Session.s_Links.emplace_back(Link(GetNextId(), startPin->ID, endPin->ID));
-                        s_Session.s_Links.back().Color = GetIconColor(startPin->Type);
+                        s_Session->s_Links.emplace_back(Link(GetNextId(), startPin->ID, endPin->ID));
+                        s_Session->s_Links.back().Color = GetIconColor(startPin->Type);
 
                         break;
                     }

@@ -43,31 +43,30 @@ namespace api {
 
 
 // Context management.
-SessionData * CreateContext()
+types::ContextData* CreateContext(const types::ContextCallbacks& Config, const char *texture_path)
 {
-    return new SessionData();
+    types::ContextData* newctx = new ContextData(Config, texture_path);
+    if (s_Session == nullptr)
+        s_Session = newctx;
+    
+    return newctx;
 }
 
-void DestroyContext(SessionData* context)
+void DestroyContext(ContextData* context)
 {
     delete context;
 }
 
-SessionData* GetContext()
+void SetContext(ContextData* context)
 {
-    return &s_Session;
-}
-
-
-void SetContext(SessionData* context)
-{
-    s_Session = *context;
+    s_Session = context;
 }
 
 void RegisterNewNode(api::NodeDescription NewDescription) {
-    // you can't register 2 nodes with the same name.
-    assert(s_Session.NodeRegistry.count(NewDescription.Type) < 1);
-    s_Session.NodeRegistry[NewDescription.Type] = NewDescription;
+    assert(s_Session != nullptr); // You forgot to call CreateContext();
+    
+    assert(s_Session->NodeRegistry.count(NewDescription.Type) < 1); // you can't register 2 nodes with the same name.
+    s_Session->NodeRegistry[NewDescription.Type] = NewDescription;
 }
 
 
@@ -94,7 +93,8 @@ void LoadNodesAndLinksFromBuffer(const size_t in_size, const char* buffer)
 
     // First line is config json.
     std::getline(inf, line);
-    s_Session.s_BlueprintData = line;
+    assert(s_Session != nullptr); // you forgot to call CreateContext();
+    s_Session->s_BlueprintData = line;
 
 
     // second overall line is node count.
@@ -152,7 +152,7 @@ void LoadNodesAndLinksFromBuffer(const size_t in_size, const char* buffer)
         // PHASE TWO - INSTANTIATE NODES ------------------------------------------
         // Use data in Nodename and Properties to instantiate nodes from the registry
         // (new node definition system)
-        if (s_Session.NodeRegistry.count(NodeName) > 0)
+        if (s_Session->NodeRegistry.count(NodeName) > 0)
         {
             Node* n = RestoreRegistryNode(NodeName,id,pin_ids);
             // Handle property through deserialization
@@ -190,7 +190,7 @@ void LoadNodesAndLinksFromBuffer(const size_t in_size, const char* buffer)
         l.Color = GetIconColor(FindPin(start_pin_id)->Type);
 
         // attach it to session
-        s_Session.s_Links.push_back(std::move(l));
+        s_Session->s_Links.push_back(std::move(l));
     }
 }
 
@@ -199,47 +199,48 @@ void LoadNodesAndLinksFromBuffer(const size_t in_size, const char* buffer)
 // Caller owns return value for purposes of memory freeing.  Use delete on the return when you're done. Thank you!
 char* SaveNodesAndLinksToBuffer(size_t* size)
 {
+    assert(s_Session != nullptr); // You forgot to call CreateContext()
     // Extremely bad serilzation system
     // std::ofstream out("nodos_project.txt");
     std::ostringstream out;
 
     // First line is the config data from the backend.  This data is automatically saved to s_Session.s_BlueprintData
     // using callbacks that were registered to the engine's config strucutre on engine initialization. 
-    out << s_Session.s_BlueprintData << std::endl;
+    out << s_Session->s_BlueprintData << std::endl;
 
     // Second line is the write node count first
-    out << s_Session.s_Nodes.size() << std::endl;
+    out << s_Session->s_Nodes.size() << std::endl;
 
     // For every node in s_Nodes...
-    for (unsigned long long i = 0; i < s_Session.s_Nodes.size(); i++)
+    for (unsigned long long i = 0; i < s_Session->s_Nodes.size(); i++)
     {
         // First line is ID
-        out << s_Session.s_Nodes[i].ID.Get() << std::endl;
+        out << s_Session->s_Nodes[i].ID.Get() << std::endl;
 
         // Next line is node type
-        out << s_Session.s_Nodes[i].Name << std::endl;
+        out << s_Session->s_Nodes[i].Name << std::endl;
 
         // the "count of pins" is next
-        int output_pin_count = s_Session.s_Nodes[i].Outputs.size();
-        int input_pin_count = s_Session.s_Nodes[i].Inputs.size();
+        int output_pin_count = s_Session->s_Nodes[i].Outputs.size();
+        int input_pin_count = s_Session->s_Nodes[i].Inputs.size();
         int pin_count = output_pin_count + input_pin_count;
         out << pin_count << std::endl;
 
         // dump the input pin ids
         for (int input_idx = 0; input_idx < input_pin_count; input_idx++ )
         {
-            out << s_Session.s_Nodes[i].Inputs[input_idx].ID.Get() << std::endl;
+            out << s_Session->s_Nodes[i].Inputs[input_idx].ID.Get() << std::endl;
         }
 
         // then dump out the output pin ids
         for (int output_idx = 0; output_idx < output_pin_count; output_idx++ )
         {
-            out << s_Session.s_Nodes[i].Outputs[output_idx].ID.Get() << std::endl;
+            out << s_Session->s_Nodes[i].Outputs[output_idx].ID.Get() << std::endl;
         }
 
         // The next line is a number describing the count of properties lines.
         unsigned long count;
-        std::string props = Prop_Serialize(s_Session.s_Nodes[i].Properties, count);
+        std::string props = Prop_Serialize(s_Session->s_Nodes[i].Properties, count);
 
         out << count << std::endl;
 
@@ -248,18 +249,18 @@ char* SaveNodesAndLinksToBuffer(size_t* size)
     }
 
     // next write link count
-    out << s_Session.s_Links.size() << std::endl;
+    out << s_Session->s_Links.size() << std::endl;
 
     // For every link in s_Links...
-    for (unsigned long long i = 0; i < s_Session.s_Links.size(); i++)
+    for (unsigned long long i = 0; i < s_Session->s_Links.size(); i++)
     {
         // First line is ID
-        out << s_Session.s_Links[i].ID.Get() << std::endl;
+        out << s_Session->s_Links[i].ID.Get() << std::endl;
 
         // next is start pin id
-        out << s_Session.s_Links[i].StartPinID.Get() << std::endl;
+        out << s_Session->s_Links[i].StartPinID.Get() << std::endl;
         // next is end pin id
-        out << s_Session.s_Links[i].EndPinID.Get() << std::endl;
+        out << s_Session->s_Links[i].EndPinID.Get() << std::endl;
     }
 
     *size = out.str().size();
@@ -339,18 +340,6 @@ void Initialize(void)
     // Call it first with a nullpointer to get the size.
     // if it's non-zero, then call it a second time passing a correctly sized buffer.
 
-    // Config structure holds callsbacks for backend-frontend serialization transactions.
-    ed::Config config;
-
-    // https://stackoverflow.com/questions/19808054/convert-c-function-pointer-to-c-function-pointer/19808250#19808250
-    //config.UserPointer = (void*) this;
-    config.SaveSettings = plano::internal::static_config_save_settings;
-    config.LoadSettings = plano::internal::static_config_load_settings;
-    config.LoadNodeSettings = plano::internal::static_config_load_node_settings;
-    config.SaveNodeSettings = plano::internal::static_config_save_node_settings;
-
-    s_Session.m_Editor = ed::CreateEditor(&config);
-    ed::SetCurrentEditor(s_Session.m_Editor);
 
     // ====================================================================================================================================
     // NODOS DEV - populate graph with nodes.  This should happen on project loads.
@@ -390,31 +379,24 @@ void Initialize(void)
     //s_Links.push_back(Link(GetNextLinkId(), s_Nodes[5].Outputs[0].ID, s_Nodes[7].Inputs[0].ID));
     //
     //s_Links.push_back(Link(GetNextLinkId(), s_Nodes[14].Outputs[0].ID, s_Nodes[15].Inputs[0].ID));
-#ifdef __APPLE__
-    s_Session.s_HeaderBackground = Application_LoadTexture("/Users/crolando/Code/plano/data/BlueprintBackground.png");
-    s_Session.s_SaveIcon         = Application_LoadTexture("/Users/crolando/Code/plano/data/ic_save_white_24dp.png");
-    s_Session.s_RestoreIcon      = Application_LoadTexture("/Users/crolando/Code/plano/data/ic_restore_white_24dp.png");
-#else
-    s_Session.s_HeaderBackground = Application_LoadTexture("../plano/data/BlueprintBackground.png"); 
-    s_Session.s_SaveIcon         = Application_LoadTexture("../plano/data/ic_save_white_24dp.png"); 
-    s_Session.s_RestoreIcon      = Application_LoadTexture("../plano/data/ic_restore_white_24dp.png"); 
-#endif
+
+
     //auto& io = ImGui::GetIO();
 }
 
 void Finalize(void)
 {
-    Application_DestroyTexture(s_Session.s_RestoreIcon);
-    Application_DestroyTexture(s_Session.s_SaveIcon);
-    Application_DestroyTexture(s_Session.s_HeaderBackground);
-    s_Session.s_RestoreIcon = nullptr;
-    s_Session.s_SaveIcon = nullptr;
-    s_Session.s_HeaderBackground = nullptr;
+    s_Session->DestroyTexture(s_Session->s_RestoreIcon);
+    s_Session->DestroyTexture(s_Session->s_SaveIcon);
+    s_Session->DestroyTexture(s_Session->s_HeaderBackground);
+    s_Session->s_RestoreIcon = nullptr;
+    s_Session->s_SaveIcon = nullptr;
+    s_Session->s_HeaderBackground = nullptr;
 
-    if (s_Session.m_Editor)
+    if (s_Session->m_Editor)
     {
-        ed::DestroyEditor(s_Session.m_Editor);
-        s_Session.m_Editor = nullptr;
+        ed::DestroyEditor(s_Session->m_Editor);
+        s_Session->m_Editor = nullptr;
     }
 }
 

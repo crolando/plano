@@ -7,20 +7,20 @@ namespace ed = ax::NodeEditor;
 namespace plano {
 namespace internal {
 
-types::SessionData s_Session;
+types::ContextData* s_Session;
 
 int GetNextId() {
-    return s_Session.s_NextId++;
+    return s_Session->s_NextId++;
 }
 
 void SetNextId(int Id) {
-    s_Session.s_NextId = Id;
+    s_Session->s_NextId = Id;
 }
 
 void LogRestoredId(int Id) {
     // we have to make sure NextID is a free ID, because
     // GetNextID returns a post-increment.
-    s_Session.s_NextId = std::max(Id + 1,s_Session.s_NextId);
+    s_Session->s_NextId = std::max(Id + 1,s_Session->s_NextId);
 }
 
 void BuildNode(types::Node* node)
@@ -40,7 +40,7 @@ void BuildNode(types::Node* node)
 
 void BuildNodes(void)
 {
-    for (auto& node : s_Session.s_Nodes)
+    for (auto& node : s_Session->s_Nodes)
         BuildNode(&node);
 }
 
@@ -61,7 +61,7 @@ bool isNodeAncestor(types::Node* Ancestor, types::Node* Decendent) {
         // Handle a linked pin.  Pins do NOT know who they are attached to.
         // We have to search the links for the connected node.
         std::vector<Node*> AncestorNodes;
-        for (auto& link : s_Session.s_Links) {
+        for (auto& link : s_Session->s_Links) {
             if(link.EndPinID == p.ID) {
                 auto n = FindPin(link.StartPinID)->Node;
 
@@ -97,7 +97,8 @@ ed::NodeId GetNextLinkId()
 
 Node* FindNode(ed::NodeId id)
 {
-    for (auto& node : s_Session.s_Nodes)
+    assert(s_Session != nullptr); // you didn't call CreateContext();
+    for (auto& node : s_Session->s_Nodes)
         if (node.ID == id)
             return &node;
 
@@ -106,7 +107,8 @@ Node* FindNode(ed::NodeId id)
 
 Link* FindLink(ed::LinkId id)
 {
-    for (auto& link : s_Session.s_Links)
+    assert(s_Session != nullptr); // you didn't call CreateContext();
+    for (auto& link : s_Session->s_Links)
         if (link.ID == id)
             return &link;
 
@@ -117,8 +119,10 @@ Pin* FindPin(ed::PinId id)
 {
     if (!id)
         return nullptr;
-
-    for (auto& node : s_Session.s_Nodes)
+    
+    assert(s_Session != nullptr); // you didn't call CreateContext();
+    
+    for (auto& node : s_Session->s_Nodes)
     {
         for (auto& pin : node.Inputs)
             if (pin.ID == id)
@@ -136,8 +140,10 @@ bool IsPinLinked(ed::PinId id)
 {
     if (!id)
         return false;
+    
+    assert(s_Session != nullptr); // you didn't call CreateContext();
 
-    for (auto& link : s_Session.s_Links)
+    for (auto& link : s_Session->s_Links)
         if (link.StartPinID == id || link.EndPinID == id)
             return true;
 
@@ -168,20 +174,27 @@ void DrawPinIcon(const Pin& pin, bool connected, int alpha)
             return;
     }
 
-    ax::Widgets::Icon(ImVec2(s_Session.s_PinIconSize, s_Session.s_PinIconSize), iconType, connected, color, ImColor(32, 32, 32, alpha));
+    ax::Widgets::Icon(ImVec2(s_Session->s_PinIconSize, s_Session->s_PinIconSize), iconType, connected, color, ImColor(32, 32, 32, alpha));
 };
 
 bool static_config_save_settings(const char* data, size_t size, ax::NodeEditor::SaveReasonFlags reason, void* userPointer)
 {
-    s_Session.s_BlueprintData.reserve(size); //maybe not needed
-    s_Session.s_BlueprintData.assign(data);
+    
+    assert(s_Session != nullptr); // you didn't call CreateContext();
+    
+    s_Session->s_BlueprintData.reserve(size); //maybe not needed
+    s_Session->s_BlueprintData.assign(data);
     return true;
 };
 
 size_t static_config_load_settings(char* data, void* userPointer)
-{   size_t size = s_Session.s_BlueprintData.size();
+{
+    
+    assert(s_Session != nullptr); // you didn't call CreateContext();
+    
+    size_t size = s_Session->s_BlueprintData.size();
     if(data) {
-        memcpy(data,s_Session.s_BlueprintData.c_str(),size);
+        memcpy(data,s_Session->s_BlueprintData.c_str(),size);
     }
     return size;
 };

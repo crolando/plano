@@ -7,31 +7,35 @@
 # include <plano_types.h>
 
 namespace plano {
+namespace types {
+    struct ContextCallbacks // Platform dependent, user-defined function pointer callback variables. See Nodos project for sample.
+    {
+        ImTextureID  (*LoadTexture)(const char* path);  // Take a PNG and upload it to the graphics card. Return an ID.
+        void         (*DestroyTexture)(ImTextureID);    // Take an ID and free the memory
+        unsigned int (*GetTextureWidth)(ImTextureID);   // Take and ID and report the width in pixels
+        unsigned int (*GetTextureHeight)(ImTextureID);  // Take and ID and report the height in pixels
+    };
+}
+
 namespace api {    
     struct NodeDescription; // Forward declaration.
     struct PinDescription; // Forward declaration.
 
     // Plano Context Management 
     // These calls manipulate the global context variable, on which the other API calls operate on.
-    types::SessionData* CreateContext();  // Typically used with: plano::api::SetContext(plano::api::CreateContext());
-    types::SessionData* GetContext();
-    void                SetContext(types::SessionData* context);
-    void                DestroyContext(types::SessionData*);
+    types::ContextData* CreateContext(const types::ContextCallbacks& Config, const char *texture_path );
+    const types::ContextData* GetContext();
+    void                SetContext(types::ContextData* context);
+    void                DestroyContext(types::ContextData*);
 
     // Drawing Subsystem Routines 
-    void Initialize(void); // Upload textures needed by the node system
     void Frame(void);      // Draws nodes and handles interactions. Call in your draw loop.
     void Finalize(void);   // Destroy textures
 
     // Node Prototype Registration     
     void RegisterNewNode(NodeDescription NewDescription);    // Call this to make the system aware of a node type. Called once per node type.
 
-    // Texture Callbacks that you have to implement 
-    // For an example, see the Nodos project.      
-    ImTextureID  Application_LoadTexture(const char* path);  // Take a PNG and upload it to the graphics card. Return an ID.        
-    void         Application_DestroyTexture(ImTextureID);    // Take an ID and free the memory         
-    unsigned int Application_GetTextureWidth(ImTextureID);   // Take and ID and report the width in pixels    
-    unsigned int Application_GetTextureHeight(ImTextureID);  // Take and ID and report the height in pixels    
+
 
     // Project Save and Load functions
     char* SaveNodesAndLinksToBuffer(size_t* size);           // Serialize the graph to a char*.  Writes length to "size". You must manually free the return value with delete.

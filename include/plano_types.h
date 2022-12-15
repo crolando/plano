@@ -15,7 +15,7 @@ namespace types {
 
 // Context for the PLANO system.
 // This is a forward declaration.
-struct SessionData;
+struct ContextData;
 
 enum class PinType
 {

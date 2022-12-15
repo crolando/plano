@@ -19,14 +19,14 @@ namespace internal {
 void draw_blueprint_style(Pin* newLinkPin)
 {
     ImGui::GetCursorScreenPos();
-    unsigned int tex_x = Application_GetTextureWidth(s_Session.s_HeaderBackground);
-    unsigned int tex_y = Application_GetTextureHeight(s_Session.s_HeaderBackground);
-    util::BlueprintNodeBuilder builder(s_Session.s_HeaderBackground, tex_x, tex_y);
+    unsigned int tex_x = s_Session->GetTextureWidth(s_Session->s_HeaderBackground);
+    unsigned int tex_y = s_Session->GetTextureHeight(s_Session->s_HeaderBackground);
+    util::BlueprintNodeBuilder builder(s_Session->s_HeaderBackground, tex_x, tex_y);
 
     // ====================================================================================================================================
     // NODOS DEV - draw nodes of type Blueprint and Simple
     // ====================================================================================================================================
-    for (auto& node : s_Session.s_Nodes)
+    for (auto& node : s_Session->s_Nodes)
     {
         // Guard for non-blueprints and non-simple nodes --------------------------------------------------------
         if (node.Type != NodeType::Blueprint && node.Type != NodeType::Simple)
@@ -126,8 +126,8 @@ void draw_blueprint_style(Pin* newLinkPin)
                 ImGui::Spring(1, 0);
             } else {
                 builder.Middle();
-                if(s_Session.NodeRegistry.count(node.Name) > 0){
-                    s_Session.NodeRegistry[node.Name].DrawAndEditProperties(node.Properties);
+                if(s_Session->NodeRegistry.count(node.Name) > 0){
+                    s_Session->NodeRegistry[node.Name].DrawAndEditProperties(node.Properties);
                 }else{
                     im_draw_basic_widgets(node.Properties);
                 }
@@ -167,7 +167,7 @@ void draw_tree_style(Pin* newLinkPin)
     // ====================================================================================================================================
     // NODOS DEV - draw nodes of type Tree
     // ====================================================================================================================================
-    for (auto& node : s_Session.s_Nodes)
+    for (auto& node : s_Session->s_Nodes)
     {
         if (node.Type != NodeType::Tree)
             continue;
@@ -311,7 +311,7 @@ void draw_houdini_style(Pin* newLinkPin)
     // ====================================================================================================================================
     // NODOS DEV - draw nodes of type Houdini
     // ====================================================================================================================================
-    for (auto& node : s_Session.s_Nodes)
+    for (auto& node : s_Session->s_Nodes)
     {
         if (node.Type != NodeType::Houdini)
             continue;
@@ -475,7 +475,7 @@ void draw_comment_style(Pin* newLinkPin)
     // ====================================================================================================================================
     // NODOS DEV - draw nodes of type Comment
     // ====================================================================================================================================
-    for (auto& node : s_Session.s_Nodes)
+    for (auto& node : s_Session->s_Nodes)
     {
         if (node.Type != NodeType::Comment)
             continue;

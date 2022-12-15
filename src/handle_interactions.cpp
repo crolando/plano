@@ -97,8 +97,8 @@ void handle_link_dragging_interactions(statepack& s)
                     if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f))
                     {
 
-                        s_Session.s_Links.emplace_back(plano::types::Link(GetNextId(), startPinId, endPinId));
-                        s_Session.s_Links.back().Color = GetIconColor(startPin->Type);
+                        s_Session->s_Links.emplace_back(plano::types::Link(GetNextId(), startPinId, endPinId));
+                        s_Session->s_Links.back().Color = GetIconColor(startPin->Type);
                     }
                 }
             } // Done with pin connection interaction handling
@@ -157,9 +157,9 @@ void handle_delete_interactions()
         {
             if (ed::AcceptDeletedItem())
             {
-                auto id = std::find_if(s_Session.s_Links.begin(), s_Session.s_Links.end(), [linkId](auto& link) { return link.ID == linkId; });
-                if (id != s_Session.s_Links.end())
-                    s_Session.s_Links.erase(id);
+                auto id = std::find_if(s_Session->s_Links.begin(), s_Session->s_Links.end(), [linkId](auto& link) { return link.ID == linkId; });
+                if (id != s_Session->s_Links.end())
+                    s_Session->s_Links.erase(id);
             }
         }
 
@@ -171,9 +171,9 @@ void handle_delete_interactions()
         {
             if (ed::AcceptDeletedItem())
             {
-                auto id = std::find_if(s_Session.s_Nodes.begin(), s_Session.s_Nodes.end(), [nodeId](auto& node) { return node.ID == nodeId; });
+                auto id = std::find_if(s_Session->s_Nodes.begin(), s_Session->s_Nodes.end(), [nodeId](auto& node) { return node.ID == nodeId; });
 
-                if (id != s_Session.s_Nodes.end())
+                if (id != s_Session->s_Nodes.end())
                 {
                     // Node deletion routine.
                     // First, we have to record a node's pin IDs before destroying the node and its pins.
@@ -185,13 +185,13 @@ void handle_delete_interactions()
                         pin_ids.push_back(outp.ID.Get());
 
                     // Now that we know what pin IDs the node had, we can actually destroy it now.
-                    s_Session.s_Nodes.erase(id);
+                    s_Session->s_Nodes.erase(id);
 
 
                     // We have to destroy link objects that were connected to this dead node.
                     // you do this by asking all the links if they're connected to the dead pin ids.
-                    auto it = s_Session.s_Links.begin();
-                    while(it != s_Session.s_Links.end())
+                    auto it = s_Session->s_Links.begin();
+                    while(it != s_Session->s_Links.end())
                     {
                         bool del = false;
                         for(auto pid: pin_ids)
@@ -208,7 +208,7 @@ void handle_delete_interactions()
                         // are you connected to at least one dieing pin?
                         if(del)
                         {
-                            it = s_Session.s_Links.erase(it);
+                            it = s_Session->s_Links.erase(it);
                         } else {
                         it++;
                         }
