@@ -7,6 +7,7 @@ namespace plano {
 namespace internal {
 
 extern types::ContextData *s_Session;      // ultimate, global, current session.  managed by public api calls.
+static int context_id = 0; // Tracks unique ImGUI ids for contexts.  Used to seed the ContextData->beginID field.
 
 // i/o functions with backend (imgui-node-editor) that generally facilitate serialization of its data.
 bool static_config_save_settings(const char* data, size_t size, ax::NodeEditor::SaveReasonFlags reason, void* userPointer);
@@ -32,10 +33,12 @@ struct ContextData {
                                int s_PinIconSize = 24;
                        std::string s_BlueprintData;
     ax::NodeEditor::EditorContext* m_Editor = nullptr;
+                       std::string beginID = "Editor";
                        ImTextureID s_HeaderBackground = nullptr;
                        ImTextureID s_SampleImage = nullptr;
                        ImTextureID s_SaveIcon = nullptr;
                        ImTextureID s_RestoreIcon = nullptr;
+    
     
                       // Callbacks
                       ImTextureID  (*LoadTexture)(const char* path);  // Take a PNG and upload it to the graphics card. Return an ID.
@@ -66,13 +69,9 @@ struct ContextData {
         config.LoadSettings = plano::internal::static_config_load_settings;
         config.LoadNodeSettings = plano::internal::static_config_load_node_settings;
         config.SaveNodeSettings = plano::internal::static_config_save_node_settings;
-
-        
         m_Editor = ax::NodeEditor::CreateEditor(&config);
-        ax::NodeEditor::SetCurrentEditor(m_Editor);
-
         
-        
+        beginID += std::to_string(internal::context_id++);
     };
 };
 } // end of plano::types namespace.

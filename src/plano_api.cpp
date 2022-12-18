@@ -45,20 +45,19 @@ namespace api {
 // Context management.
 types::ContextData* CreateContext(const types::ContextCallbacks& Config, const char *texture_path)
 {
-    types::ContextData* newctx = new ContextData(Config, texture_path);
-    if (s_Session == nullptr)
-        s_Session = newctx;
-    
+    types::ContextData* newctx = new ContextData(Config, texture_path); //CTOR handles NodeEditor object creation
     return newctx;
 }
 
 void DestroyContext(ContextData* context)
 {
+    ax::NodeEditor::DestroyEditor(context->m_Editor);
     delete context;
 }
 
 void SetContext(ContextData* context)
 {
+    ax::NodeEditor::SetCurrentEditor(context->m_Editor);
     s_Session = context;
 }
 
