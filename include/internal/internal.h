@@ -73,6 +73,12 @@ struct ContextData {
         
         beginID += std::to_string(internal::context_id++);
     };
+    // destructor
+    ContextData()
+    {
+        ax::NodeEditor::DestroyEditor(m_Editor);
+        DestroyTexture(s_HeaderBackground);
+    };
 };
 } // end of plano::types namespace.
 

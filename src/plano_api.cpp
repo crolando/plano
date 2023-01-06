@@ -51,8 +51,8 @@ types::ContextData* CreateContext(const types::ContextCallbacks& Config, const c
 
 void DestroyContext(ContextData* context)
 {
-    ax::NodeEditor::DestroyEditor(context->m_Editor);
     delete context;
+    context = nullptr;
 }
 
 void SetContext(ContextData* context)
