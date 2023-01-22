@@ -61,6 +61,11 @@ void SetContext(ContextData* context)
     s_Session = context;
 }
 
+const types::ContextData* GetContext()
+{
+    return s_Session;
+}
+
 void RegisterNewNode(api::NodeDescription NewDescription) {
     assert(s_Session != nullptr); // You forgot to call CreateContext();
     
