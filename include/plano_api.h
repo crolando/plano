@@ -30,7 +30,6 @@ namespace api {
 
     // Drawing Subsystem Routines 
     void Frame(void);      // Draws nodes and handles interactions. Call in your draw loop.
-    void Finalize(void);   // Destroy textures
 
     // Node Prototype Registration     
     void RegisterNewNode(NodeDescription NewDescription);    // Call this to make the system aware of a node type. Called once per node type.

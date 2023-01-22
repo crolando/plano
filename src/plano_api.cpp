@@ -383,22 +383,6 @@ void Initialize(void)
     //auto& io = ImGui::GetIO();
 }
 
-void Finalize(void)
-{
-    s_Session->DestroyTexture(s_Session->s_RestoreIcon);
-    s_Session->DestroyTexture(s_Session->s_SaveIcon);
-    s_Session->DestroyTexture(s_Session->s_HeaderBackground);
-    s_Session->s_RestoreIcon = nullptr;
-    s_Session->s_SaveIcon = nullptr;
-    s_Session->s_HeaderBackground = nullptr;
-
-    if (s_Session->m_Editor)
-    {
-        ed::DestroyEditor(s_Session->m_Editor);
-        s_Session->m_Editor = nullptr;
-    }
-}
-
 static bool Splitter(bool split_vertically, float thickness, float* size1, float* size2, float min_size1, float min_size2, float splitter_long_axis_size = -1.0f)
 {
     using namespace ImGui;
