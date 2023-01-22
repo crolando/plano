@@ -47,6 +47,7 @@ struct ContextData {
                       unsigned int (*GetTextureHeight)(ImTextureID);  // Take and ID and report the height in pixels
     
     const char* TexturePath;
+                              bool IsProjectDirty;
 
     // Constructor
     ContextData(ContextCallbacks Callbacks, const char *texture_path):
@@ -72,6 +73,7 @@ struct ContextData {
         m_Editor = ax::NodeEditor::CreateEditor(&config);
         
         beginID += std::to_string(internal::context_id++);
+        IsProjectDirty = false;
     };
     // destructor
     ContextData()

@@ -34,7 +34,9 @@ namespace api {
     // Node Prototype Registration     
     void RegisterNewNode(NodeDescription NewDescription);    // Call this to make the system aware of a node type. Called once per node type.
 
-
+    // Project Dirty Flag
+    bool IsProjectDirty(); // If true, something in the project has changed that will be lost if not saved. If false, no changes since last load.  Dirty Flags are stored "per-context".  This reads the current context's flag.
+    void ClearProjectDirtyFlag(); // You call this after saving, which makes the dirty flag false for the current context.
 
     // Project Save and Load functions
     char* SaveNodesAndLinksToBuffer(size_t* size);           // Serialize the graph to a char*.  Writes length to "size". You must manually free the return value with delete.

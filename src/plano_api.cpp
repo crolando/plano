@@ -66,6 +66,16 @@ const types::ContextData* GetContext()
     return s_Session;
 }
 
+bool IsProjectDirty()
+{
+    assert(s_Session != nullptr); // Context has not been created yet.
+    return s_Session->IsProjectDirty;
+}
+
+void ClearProjectDirtyFlag()
+{
+    s_Session->IsProjectDirty = false;
+}
 void RegisterNewNode(api::NodeDescription NewDescription) {
     assert(s_Session != nullptr); // You forgot to call CreateContext();
     
