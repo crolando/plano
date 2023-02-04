@@ -206,7 +206,11 @@ void draw_tree_style(Pin* newLinkPin)
 
                 ed::PushStyleVar(ed::StyleVar_PinArrowSize, 10.0f);
                 ed::PushStyleVar(ed::StyleVar_PinArrowWidth, 10.0f);
+#if IMGUI_VERSION_NUM > 18101
+                ed::PushStyleVar(ed::StyleVar_PinCorners, ImDrawFlags_RoundCornersBottom);
+#else
                 ed::PushStyleVar(ed::StyleVar_PinCorners, 12);
+#endif
                 ed::BeginPin(pin.ID, ed::PinKind::Input);
                 ed::PinPivotRect(inputsRect.GetTL(), inputsRect.GetBR());
                 ed::PinRect(inputsRect.GetTL(), inputsRect.GetBR());
@@ -283,17 +287,25 @@ void draw_tree_style(Pin* newLinkPin)
         //    drawList->PathStroke(col, true, thickness);
         //};
 
+#if IMGUI_VERSION_NUM > 18101
+        const auto    topRoundCornersFlags = ImDrawFlags_RoundCornersTop;
+        const auto bottomRoundCornersFlags = ImDrawFlags_RoundCornersBottom;
+#else
+        const auto    topRoundCornersFlags = 1 | 2;
+        const auto bottomRoundCornersFlags = 4 | 8;
+#endif
+
         drawList->AddRectFilled(inputsRect.GetTL() + ImVec2(0, 1), inputsRect.GetBR(),
-            IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), inputAlpha), 4.0f, 12);
+            IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), inputAlpha), 4.0f, bottomRoundCornersFlags);
         //ImGui::PushStyleVar(ImGuiStyleVar_AntiAliasFringeScale, 1.0f);
         drawList->AddRect(inputsRect.GetTL() + ImVec2(0, 1), inputsRect.GetBR(),
-            IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), inputAlpha), 4.0f, 12);
+            IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), inputAlpha), 4.0f, bottomRoundCornersFlags);
         //ImGui::PopStyleVar();
         drawList->AddRectFilled(outputsRect.GetTL(), outputsRect.GetBR() - ImVec2(0, 1),
-            IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), outputAlpha), 4.0f, 3);
+            IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), outputAlpha), 4.0f, bottomRoundCornersFlags);
         //ImGui::PushStyleVar(ImGuiStyleVar_AntiAliasFringeScale, 1.0f);
         drawList->AddRect(outputsRect.GetTL(), outputsRect.GetBR() - ImVec2(0, 1),
-            IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), outputAlpha), 4.0f, 3);
+            IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), outputAlpha), 4.0f, bottomRoundCornersFlags);
         //ImGui::PopStyleVar();
         drawList->AddRectFilled(contentRect.GetTL(), contentRect.GetBR(), IM_COL32(24, 64, 128, 200), 0.0f);
         //ImGui::PushStyleVar(ImGuiStyleVar_AntiAliasFringeScale, 1.0f);
@@ -352,9 +364,15 @@ void draw_houdini_style(Pin* newLinkPin)
                 inputsRect.Min.y -= padding;
                 inputsRect.Max.y -= padding;
 
+#if IMGUI_VERSION_NUM > 18101
+                const auto allRoundCornersFlags = ImDrawFlags_RoundCornersAll;
+#else
+                const auto allRoundCornersFlags = 15;
+#endif
+
                 //ed::PushStyleVar(ed::StyleVar_PinArrowSize, 10.0f);
                 //ed::PushStyleVar(ed::StyleVar_PinArrowWidth, 10.0f);
-                ed::PushStyleVar(ed::StyleVar_PinCorners, 15);
+                ed::PushStyleVar(ed::StyleVar_PinCorners, allRoundCornersFlags);
                 ed::BeginPin(pin.ID, ed::PinKind::Input);
                 ed::PinPivotRect(inputsRect.GetCenter(), inputsRect.GetCenter());
                 ed::PinRect(inputsRect.GetTL(), inputsRect.GetBR());
@@ -364,9 +382,9 @@ void draw_houdini_style(Pin* newLinkPin)
 
                 auto drawList = ImGui::GetWindowDrawList();
                 drawList->AddRectFilled(inputsRect.GetTL(), inputsRect.GetBR(),
-                    IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), inputAlpha), 4.0f, 15);
+                    IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), inputAlpha), 4.0f, allRoundCornersFlags);
                 drawList->AddRect(inputsRect.GetTL(), inputsRect.GetBR(),
-                    IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), inputAlpha), 4.0f, 15);
+                    IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), inputAlpha), 4.0f, allRoundCornersFlags);
 
                 if (newLinkPin && !CanCreateLink(newLinkPin, &pin) && &pin != newLinkPin)
                     inputAlpha = (int)(255 * ImGui::GetStyle().Alpha * (48.0f / 255.0f));
@@ -407,6 +425,14 @@ void draw_houdini_style(Pin* newLinkPin)
                 outputsRect.Min.y += padding;
                 outputsRect.Max.y += padding;
 
+#if IMGUI_VERSION_NUM > 18101
+                const auto allRoundCornersFlags = ImDrawFlags_RoundCornersAll;
+                const auto topRoundCornersFlags = ImDrawFlags_RoundCornersTop;
+#else
+                const auto allRoundCornersFlags = 15;
+                const auto topRoundCornersFlags = 3;
+#endif
+
                 ed::PushStyleVar(ed::StyleVar_PinCorners, 3);
                 ed::BeginPin(pin.ID, ed::PinKind::Output);
                 ed::PinPivotRect(outputsRect.GetCenter(), outputsRect.GetCenter());
@@ -416,9 +442,9 @@ void draw_houdini_style(Pin* newLinkPin)
 
                 auto drawList = ImGui::GetWindowDrawList();
                 drawList->AddRectFilled(outputsRect.GetTL(), outputsRect.GetBR(),
-                    IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), outputAlpha), 4.0f, 15);
+                    IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), outputAlpha), 4.0f, allRoundCornersFlags);
                 drawList->AddRect(outputsRect.GetTL(), outputsRect.GetBR(),
-                    IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), outputAlpha), 4.0f, 15);
+                    IM_COL32((int)(255 * pinBackground.x), (int)(255 * pinBackground.y), (int)(255 * pinBackground.z), outputAlpha), 4.0f, allRoundCornersFlags);
 
 
                 if (newLinkPin && !CanCreateLink(newLinkPin, &pin) && &pin != newLinkPin)
@@ -434,7 +460,7 @@ void draw_houdini_style(Pin* newLinkPin)
         ed::PopStyleVar(7);
         ed::PopStyleColor(4);
 
-        auto drawList = ed::GetNodeBackgroundDrawList(node.ID);
+        // auto drawList = ed::GetNodeBackgroundDrawList(node.ID);
 
         //const auto fringeScale = ImGui::GetStyle().AntiAliasFringeScale;
         //const auto unitSize    = 1.0f / fringeScale;

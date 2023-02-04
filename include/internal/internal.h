@@ -48,6 +48,7 @@ struct ContextData {
     
     const char* TexturePath;
                               bool IsProjectDirty;
+                              bool m_ShowOrdinals;
 
     // Constructor
     ContextData(ContextCallbacks Callbacks, const char *texture_path):
@@ -74,6 +75,7 @@ struct ContextData {
         
         beginID += std::to_string(internal::context_id++);
         IsProjectDirty = false;
+        m_ShowOrdinals = true;
     };
     // destructor
     ContextData()
