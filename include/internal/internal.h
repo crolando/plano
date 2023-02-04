@@ -75,7 +75,7 @@ struct ContextData {
         
         beginID += std::to_string(internal::context_id++);
         IsProjectDirty = false;
-        m_ShowOrdinals = true;
+        m_ShowOrdinals = false;
     };
     // destructor
     ContextData()
