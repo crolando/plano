@@ -96,9 +96,9 @@ void handle_link_dragging_interactions(statepack& s)
                     showLabel("+ Create Link", ImColor(32, 45, 32, 180));
                     if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f))
                     {
-
                         s_Session->s_Links.emplace_back(plano::types::Link(GetNextId(), startPinId, endPinId));
                         s_Session->s_Links.back().Color = GetIconColor(startPin->Type);
+                        s_Session->IsProjectDirty = true;
                     }
                 }
             } // Done with pin connection interaction handling

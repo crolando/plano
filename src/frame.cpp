@@ -149,8 +149,10 @@ void Frame(void)
         else
             ImGui::Text("Unknown node: %p", s.contextNodeId.AsPointer());
         ImGui::Separator();
-        if (ImGui::MenuItem("Delete"))
+        if (ImGui::MenuItem("Delete")) {
             ed::DeleteNode(s.contextNodeId);
+            s_Session->IsProjectDirty = true;
+        }
         ImGui::EndPopup();
     }
 
@@ -190,7 +192,10 @@ void Frame(void)
             ImGui::Text("Unknown link: %p", s.contextLinkId.AsPointer());
         ImGui::Separator();
         if (ImGui::MenuItem("Delete"))
+        {
             ed::DeleteLink(s.contextLinkId);
+            s_Session->IsProjectDirty = true;
+        }
         ImGui::EndPopup();
     }
 
@@ -208,6 +213,7 @@ void Frame(void)
         for(auto nodos: s_Session->NodeRegistry){
             if (ImGui::MenuItem(nodos.first.c_str())){
                 node = NewRegistryNode(nodos.first);
+                s_Session->IsProjectDirty = true;
             }
         }
 

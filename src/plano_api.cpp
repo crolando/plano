@@ -68,8 +68,14 @@ const types::ContextData* GetContext()
 
 bool IsProjectDirty()
 {
-    assert(s_Session != nullptr); // Context has not been created yet.
-    return s_Session->IsProjectDirty;
+    if (s_Session == nullptr)
+    {
+        // This condition can trip if you choose "new", and there is not a context open yet. 
+        // This condition is always "clean": there is nothing to save because there is nothing. 
+        return false;
+    } else {
+        return s_Session->IsProjectDirty;
+    }
 }
 
 void ClearProjectDirtyFlag()

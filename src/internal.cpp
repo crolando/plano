@@ -184,6 +184,11 @@ bool static_config_save_settings(const char* data, size_t size, ax::NodeEditor::
     
     s_Session->s_BlueprintData.reserve(size); //maybe not needed
     s_Session->s_BlueprintData.assign(data);
+
+    // Report project dirt for interactions we don't handle 
+    if ((uint32_t)ax::NodeEditor::SaveReasonFlags::Position & (uint32_t)reason)
+        s_Session->IsProjectDirty = true;
+
     return true;
 };
 
@@ -218,6 +223,10 @@ bool static_config_save_node_settings(ax::NodeEditor::NodeId nodeId, const char*
         return false;
 
     node->State.assign(data, size);
+
+    // Report project dirt for interactions we don't handle 
+    if ((uint32_t)ax::NodeEditor::SaveReasonFlags::Position & (uint32_t)reason)
+        s_Session->IsProjectDirty = true;
 
     return true;
 };
