@@ -78,7 +78,7 @@ struct ContextData {
         m_ShowOrdinals = false;
     };
     // destructor
-    ContextData()
+    ~ContextData()
     {
         ax::NodeEditor::DestroyEditor(m_Editor);
         DestroyTexture(s_HeaderBackground);
